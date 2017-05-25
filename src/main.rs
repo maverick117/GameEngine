@@ -1,3 +1,8 @@
+#[macro_use]
+extern crate gfx;
+extern crate gfx_window_glutin;
+extern crate glutin;
+
 mod console;
 mod render;
 mod input;
@@ -9,6 +14,13 @@ use std::sync::mpsc::channel;
 
 use input::InputSystem;
 
+static events_loop: glutin::EventsLoop;
+static builder: glutin::WindowBuilder;
+
+lazy_static!{
+
+}
+
 #[derive(Copy,Clone,Debug)]
 pub enum SystemMsg {
     SysInit,
@@ -16,6 +28,7 @@ pub enum SystemMsg {
     SysUpdate,
     SysFlush,
 }
+
 
 #[derive(Copy,Clone,Debug)]
 pub enum InputMsg {
@@ -34,7 +47,15 @@ pub enum ModelMsg {
 
 #[derive(Copy,Clone,Debug)]
 pub enum LogicMsg {
+}
 
+#[derive(Copy,Clone,Debug)]
+pub enum MsgContent {
+    System(SystemMsg),
+    Input(InputMsg),
+    Render(RenderMsg),
+    Model(ModelMsg),
+    Logic(LogicMsg),
 }
 
 #[derive(Copy,Clone,Debug)]
@@ -56,6 +77,7 @@ pub trait System {
     fn init(&mut self);
     fn main_loop(&mut self);
 }
+
 
 fn spawn_systems<T>(mut sys: T)
     where T: System
