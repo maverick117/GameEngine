@@ -16,13 +16,40 @@ pub enum SystemMsg {
     SysFlush,
 }
 
-pub struct Msg {}
+pub enum InputMsg {
+
+}
+
+pub enum RenderMsg {
+
+}
+
+pub enum ModelMsg {
+
+}
+
+pub enum LogicMsg {
+
+}
+
+pub enum MsgContent {
+    System(SystemMsg),
+    Input(InputMsg),
+    Render(RenderMsg),
+    Model(ModelMsg),
+    Logic(LogicMsg),
+}
+
+pub struct Msg {
+    content: MsgContent,
+    // Other fields
+}
 
 pub trait System {
     fn init(&self);
     fn main_loop(&mut self);
     fn add_tx(&mut self, msg_tx: Sender<Msg>);
-    fn set_rx(&mut self, msg_rx: Receiver<Msg>);
+    //fn set_rx(&mut self, msg_rx: Receiver<Msg>);
 }
 
 fn spawn_systems<T>(mut sys: T)
@@ -40,7 +67,8 @@ fn main() {
 
     let input_system: InputSystem = InputSystem::new();
 
-
+    let (input_tx, input_rx) = mpsc::channel();
+    
     let input_handle = thread::spawn(move || spawn_systems(input_system));
 
     input_handle.join().unwrap();
