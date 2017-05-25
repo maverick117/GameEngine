@@ -17,10 +17,6 @@ impl System for InputSystem {
             println!("Running!");
         }
     }
-    fn add_tx(&mut self, msg_tx: Sender<Msg>) {
-        self.msg_tx.push(msg_tx);
-    }
-    //fn set_rx(&mut self, msg_tx: Receiver<Msg>) {}
 }
 
 impl InputSystem {
