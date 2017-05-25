@@ -46,10 +46,8 @@ pub struct Msg {
 }
 
 pub trait System {
-    fn init(&self);
+    fn init(&mut self);
     fn main_loop(&mut self);
-    fn add_tx(&mut self, msg_tx: Sender<Msg>);
-    //fn set_rx(&mut self, msg_rx: Receiver<Msg>);
 }
 
 fn spawn_systems<T>(mut sys: T)
@@ -64,11 +62,21 @@ fn main() {
 
     println!("Welcome to Game Engine. Initializing all systems");
 
-
-    let input_system: InputSystem = InputSystem::new();
-
+    // Create tunnels for message passing
     let (input_tx, input_rx) = mpsc::channel();
-    
+    let (render_tx, render_rx) = mpsc::channel();
+    let (model_tx, model_rx) = mpsc::channel();
+    let (logic_tx, logic_rx) = mpsc::channel();
+
+    // Initialize input system
+    let input_system = InputSystem::new(vec![input_tx.clone(),
+                                             render_tx.clone(),
+                                             model_tx.clone(),
+                                             logic_tx.clone()],
+                                        input_rx);
+
+
+
     let input_handle = thread::spawn(move || spawn_systems(input_system));
 
     input_handle.join().unwrap();
