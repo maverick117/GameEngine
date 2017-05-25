@@ -13,7 +13,12 @@ use std::thread;
 use std::sync::mpsc::channel;
 
 use input::InputSystem;
-use render::RenderSystem;
+static events_loop: glutin::EventsLoop;
+static builder: glutin::WindowBuilder;
+
+lazy_static!{
+
+}
 
 pub enum SystemMsg {
     SysInit,
@@ -22,13 +27,38 @@ pub enum SystemMsg {
     SysFlush,
 }
 
-pub struct Msg {}
+pub enum InputMsg {
+
+}
+
+pub enum RenderMsg {
+
+}
+
+pub enum ModelMsg {
+
+}
+
+pub enum LogicMsg {
+
+}
+
+pub enum MsgContent {
+    System(SystemMsg),
+    Input(InputMsg),
+    Render(RenderMsg),
+    Model(ModelMsg),
+    Logic(LogicMsg),
+}
+
+pub struct Msg {
+    content: MsgContent,
+    // Other fields
+}
 
 pub trait System {
     fn init(&mut self);
     fn main_loop(&mut self);
-    fn add_tx(&mut self, msg_tx: Sender<Msg>);
-    fn set_rx(&mut self, msg_rx: Receiver<Msg>);
 }
 
 fn spawn_systems<T>(mut sys: T)
@@ -43,14 +73,24 @@ fn main() {
 
     println!("Welcome to Game Engine. Initializing all systems");
 
+    // Create tunnels for message passing
+    let (input_tx, input_rx) = mpsc::channel();
+    let (render_tx, render_rx) = mpsc::channel();
+    let (model_tx, model_rx) = mpsc::channel();
+    let (logic_tx, logic_rx) = mpsc::channel();
 
-    // let input_system: InputSystem = InputSystem::new();
-    let render_system: RenderSystem = RenderSystem::new("Game window".to_string(), 1024, 768);
+    // Initialize input system
+    let input_system = InputSystem::new(vec![input_tx.clone(),
+                                             render_tx.clone(),
+                                             model_tx.clone(),
+                                             logic_tx.clone()],
+                                        input_rx);
 
-    // let input_handle = thread::spawn(move || spawn_systems(input_system));
-    let render_handle = thread::spawn(move || spawn_systems(render_system));
 
-    render_handle.join().unwrap();
+
+    let input_handle = thread::spawn(move || spawn_systems(input_system));
+
+    input_handle.join().unwrap();
 
 
 }
