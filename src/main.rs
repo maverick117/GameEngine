@@ -1,43 +1,55 @@
-mod console;
-mod render;
-mod input;
-mod model;
-
 #[macro_use]
 extern crate gfx;
 extern crate gfx_window_glutin;
 extern crate glutin;
 
-pub type ColorFormat = gfx::format::Rgba8;
-pub type DepthFormat = gfx::format::DepthStencil;
+mod console;
+mod render;
+mod input;
+mod model;
 
-pub struct Msg {
+use std::sync::mpsc::*;
+use std::thread;
+use std::sync::mpsc::channel;
 
+use input::InputSystem;
+use render::RenderSystem;
+
+pub enum SystemMsg {
+    SysInit,
+    SysHalt,
+    SysUpdate,
+    SysFlush,
 }
 
-pub trait System{
-    fn handle_message(msg: Msg);
+pub struct Msg {}
 
-
+pub trait System {
+    fn init(&self);
+    fn main_loop(&mut self);
+    fn add_tx(&mut self, msg_tx: Sender<Msg>);
+    fn set_rx(&mut self, msg_rx: Receiver<Msg>);
 }
 
-pub fn main() {
-    let events_loop = glutin::EventsLoop::new();
-    let builder = glutin::WindowBuilder::new()
-        .with_title("Game window".to_string())
-        .with_dimensions(1024, 768)
-        .with_vsync();
-    let (window, mut device, mut factory, main_color, mut main_depth) =
-        gfx_window_glutin::init::<ColorFormat, DepthFormat>(builder, &events_loop);
-    let mut encoder: gfx::Encoder<_, _> = factory.create_command_buffer().into();
+fn spawn_systems<T>(mut sys: T)
+    where T: System
+{
+    println!("Spawning systems");
+    sys.init();
+    sys.main_loop();
+}
 
-    let mut running = true;
-    while running {
-        // fetch events
-        
+fn main() {
 
-        // draw a frame
-        encoder.flush(&mut device);
-        window.swap_buffers().unwrap();
-    }
+    println!("Welcome to Game Engine. Initializing all systems");
+
+
+    let input_system: InputSystem = InputSystem::new();
+    let render_system: RenderSystem = RenderSystem::new("Game window".to_string(), 1024, 768);
+
+    let input_handle = thread::spawn(move || spawn_systems(input_system));
+
+    input_handle.join().unwrap();
+
+
 }

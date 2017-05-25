@@ -7,3 +7,5 @@ authors = ["Andrew Jianzhong Liu <liujzh@shanghaitech.edu.cn>"]
 gfx = "0.15"
 glutin ="*"
 gfx_window_glutin = "*"
+
+obj-rs = "0.4"
