@@ -9,7 +9,7 @@ use super::Msg;
 pub type ColorFormat = gfx::format::Rgba8;
 pub type DepthFormat = gfx::format::DepthStencil;
 
-pub struct RenderSystem{
+pub struct RenderSystem {
     title: String,
     width: i32,
     height: i32,
@@ -44,13 +44,13 @@ impl System for RenderSystem {
         main_depth = main_depth + 1;
         encoder = encoder + 1;
 
-        
+
     }
     fn main_loop(&mut self) {
         let mut running = true;
         while running {
             // fetch events
-            
+
 
             // draw a frame
             self.encoder.flush(&mut self.device);
@@ -62,11 +62,11 @@ impl System for RenderSystem {
 }
 
 impl RenderSystem {
-    pub fn new(title: String, width:i32, height: i32) -> RenderSystem {
+    pub fn new(title: String, width: i32, height: i32) -> RenderSystem {
         RenderSystem {
-            title: title, 
+            title: title,
             width: width,
-            height: height
+            height: height,
         }
     }
 }

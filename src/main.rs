@@ -4,23 +4,24 @@ extern crate gfx_window_glutin;
 extern crate glutin;
 
 mod console;
-mod render;
+//mod render;
 mod input;
 mod model;
 
+use std::sync::mpsc;
 use std::sync::mpsc::*;
 use std::thread;
 use std::sync::mpsc::channel;
 
 use input::InputSystem;
-
+/*
 static events_loop: glutin::EventsLoop;
 static builder: glutin::WindowBuilder;
 
 lazy_static!{
 
 }
-
+*/
 #[derive(Copy,Clone,Debug)]
 pub enum SystemMsg {
     SysInit,
@@ -47,15 +48,6 @@ pub enum ModelMsg {
 
 #[derive(Copy,Clone,Debug)]
 pub enum LogicMsg {
-}
-
-#[derive(Copy,Clone,Debug)]
-pub enum MsgContent {
-    System(SystemMsg),
-    Input(InputMsg),
-    Render(RenderMsg),
-    Model(ModelMsg),
-    Logic(LogicMsg),
 }
 
 #[derive(Copy,Clone,Debug)]
