@@ -9,6 +9,7 @@ use std::sync::mpsc::channel;
 
 use input::InputSystem;
 
+#[derive(Copy,Clone,Debug)]
 pub enum SystemMsg {
     SysInit,
     SysHalt,
@@ -16,22 +17,27 @@ pub enum SystemMsg {
     SysFlush,
 }
 
+#[derive(Copy,Clone,Debug)]
 pub enum InputMsg {
 
 }
 
+#[derive(Copy,Clone,Debug)]
 pub enum RenderMsg {
 
 }
 
+#[derive(Copy,Clone,Debug)]
 pub enum ModelMsg {
 
 }
 
+#[derive(Copy,Clone,Debug)]
 pub enum LogicMsg {
 
 }
 
+#[derive(Copy,Clone,Debug)]
 pub enum MsgContent {
     System(SystemMsg),
     Input(InputMsg),
@@ -40,6 +46,7 @@ pub enum MsgContent {
     Logic(LogicMsg),
 }
 
+#[derive(Copy,Clone,Debug)]
 pub struct Msg {
     content: MsgContent,
     // Other fields
