@@ -25,7 +25,7 @@ pub enum SystemMsg {
 pub struct Msg {}
 
 pub trait System {
-    fn init(&self);
+    fn init(&mut self);
     fn main_loop(&mut self);
     fn add_tx(&mut self, msg_tx: Sender<Msg>);
     fn set_rx(&mut self, msg_rx: Receiver<Msg>);
@@ -44,12 +44,13 @@ fn main() {
     println!("Welcome to Game Engine. Initializing all systems");
 
 
-    let input_system: InputSystem = InputSystem::new();
+    // let input_system: InputSystem = InputSystem::new();
     let render_system: RenderSystem = RenderSystem::new("Game window".to_string(), 1024, 768);
 
-    let input_handle = thread::spawn(move || spawn_systems(input_system));
+    // let input_handle = thread::spawn(move || spawn_systems(input_system));
+    let render_handle = thread::spawn(move || spawn_systems(render_system));
 
-    input_handle.join().unwrap();
+    render_handle.join().unwrap();
 
 
 }
