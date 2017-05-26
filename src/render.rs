@@ -12,12 +12,15 @@ use std::sync::Mutex;
 pub type ColorFormat = gfx::format::Rgba8;
 pub type DepthFormat = gfx::format::DepthStencil;
 
-pub struct RenderSystem{
+pub struct RenderSystem {
     title: String,
     width: i32,
     height: i32,
-    // model_list: Vec<>
     events_loop: Arc<Mutex<glutin::EventsLoop>>,
+    window: Arc<Mutex<glutin::Window>>,
+    msg_tx: Vec<Sender<Msg>>,
+    msg_rx: Receiver<Msg>,
+
     // builder: glutin::WindowBuilder,
     // encoder: gfx::Encoder<i32, i32 > ,
     // window: Arc<Mutex<glutin::Window>>,
@@ -47,13 +50,13 @@ impl System for RenderSystem {
         // main_depth = main_depth + 1;
         // encoder = encoder + 1;
 
-        
+
     }
     fn main_loop(&mut self) {
         // let mut running = true;
         // while running {
         //     // fetch events
-            
+
 
         //     // draw a frame
         //     self.encoder.flush(&mut self.device);
@@ -63,9 +66,13 @@ impl System for RenderSystem {
 }
 
 impl RenderSystem {
-    pub fn new(title: String, width:i32, height: i32, events_loop: Arc<Mutex<glutin::EventsLoop>>) -> RenderSystem {
+    pub fn new(title: String,
+               width: i32,
+               height: i32,
+               events_loop: Arc<Mutex<glutin::EventsLoop>>)
+               -> RenderSystem {
         RenderSystem {
-            title: title, 
+            title: title,
             width: width,
             height: height,
             events_loop: events_loop,

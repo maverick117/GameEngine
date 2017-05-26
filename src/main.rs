@@ -2,7 +2,7 @@
 extern crate gfx;
 extern crate gfx_window_glutin;
 extern crate glutin;
-
+extern crate amethyst_renderer;
 
 mod console;
 //mod render;
