@@ -63,7 +63,7 @@ pub enum ModelMsg {
 #[derive(Clone)]
 pub enum LogicMsg {
     Scene(Box<amethyst_renderer::Scene<gfx_device_gl::Resources>>),
-    ModelReq(Arc<Mutex<std::path::Path>>),
+    ModelReq(Box<String>),
 }
 
 impl fmt::Debug for LogicMsg {
