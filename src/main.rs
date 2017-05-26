@@ -5,33 +5,28 @@ extern crate glutin;
 
 
 mod console;
-mod render;
+//mod render;
 mod input;
 mod model;
-mod logic;
-
-use std::thread;
 
 use std::sync::mpsc;
 use std::sync::mpsc::*;
+use std::thread;
 use std::sync::mpsc::channel;
 use std::sync::Arc;
 use std::sync::Mutex;
-
 use std::cell::UnsafeCell;
-
+// use input::InputSystem;
+//use render::RenderSystem;
+use console::ConsoleSystem;
+use gfx::Device;
 use std::ops::Deref;
 
-use gfx::Device;
-
 use input::*;
-use console::*;
-use render::*;
-use model::*;
-use logic::*;
 
 pub type ColorFormat = gfx::format::Rgba8;
 pub type DepthFormat = gfx::format::DepthStencil;
+
 
 #[derive(Copy,Clone,Debug)]
 pub enum SystemMsg {
@@ -44,7 +39,13 @@ pub enum SystemMsg {
 
 #[derive(Copy,Clone,Debug)]
 pub enum InputMsg {
-
+    KeyDown(glutin::VirtualKeyCode),
+    KeyUp(glutin::VirtualKeyCode),
+    MouseMoved(i32, i32),
+    MouseDown(glutin::MouseButton),
+    MouseUp(glutin::MouseButton),
+    Resize(u32, u32),
+    Moved(i32, i32),
 }
 
 #[derive(Copy,Clone,Debug)]
@@ -61,16 +62,17 @@ pub enum ModelMsg {
 pub enum LogicMsg {
 }
 
-#[derive(Copy,Clone,Debug)]
+#[derive(Clone,Debug)]
 pub enum MsgContent {
     System(SystemMsg),
     Input(InputMsg),
     Render(RenderMsg),
     Model(ModelMsg),
     Logic(LogicMsg),
+    Debug(String),
 }
 
-#[derive(Copy,Clone,Debug)]
+#[derive(Clone,Debug)]
 pub struct Msg {
     content: MsgContent,
     // Other fields
@@ -80,6 +82,7 @@ pub trait System {
     fn init(&mut self);
     fn main_loop(&mut self);
 }
+
 
 fn spawn_systems<T>(mut sys: T)
     where T: System
@@ -114,36 +117,20 @@ fn main() {
     // Initialize input system
     let input_system = InputSystem::new(events_loop.clone(),
                                         arc_window.clone(),
-                                        vec![render_tx, model_tx, logic_tx],
+                                        vec![render_tx, model_tx, logic_tx, console_tx],
                                         input_rx);
-    // Initialize console system
     let console_system = ConsoleSystem::new(Vec::new(), console_rx);
 
-    // Initialize render system
-    // let render_system = RenderSystem::new(...);
-
-    // Initialize model system
-    // let model_system = ModelSystem::new(...);
-
-    // Initialize logic system
-    // let logic_system = LogicSystem::new(...);
 
 
 
-    // Spawn threads for each system
+
+
     let input_handle = thread::spawn(move || spawn_systems(input_system));
     let console_handle = thread::spawn(move || spawn_systems(console_system));
-    // let render_handle = thread::spawn(move || spawn_systems(render_system));
-    // let model_handle = thread::spawn(move || spawn_systems(model_system));
-    // let logic_handle = thread::spawn(move || spawn_systems(logic_system));
 
-    // Join threads on exit
     input_handle.join().unwrap();
     console_handle.join().unwrap();
-    // render_handle.join().unwrap();
-    // model_handle.join().unwrap();
-    // logic_handle.join().unwrap();
 
-    println!("Program exited.")
 
 }
