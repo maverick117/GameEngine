@@ -39,7 +39,13 @@ pub enum SystemMsg {
 
 #[derive(Copy,Clone,Debug)]
 pub enum InputMsg {
-
+    KeyDown(glutin::VirtualKeyCode),
+    KeyUp(glutin::VirtualKeyCode),
+    MouseMoved(i32, i32),
+    MouseDown(glutin::MouseButton),
+    MouseUp(glutin::MouseButton),
+    Resize(u32, u32),
+    Moved(i32, i32),
 }
 
 #[derive(Copy,Clone,Debug)]
@@ -56,16 +62,17 @@ pub enum ModelMsg {
 pub enum LogicMsg {
 }
 
-#[derive(Copy,Clone,Debug)]
+#[derive(Clone,Debug)]
 pub enum MsgContent {
     System(SystemMsg),
     Input(InputMsg),
     Render(RenderMsg),
     Model(ModelMsg),
     Logic(LogicMsg),
+    Debug(String),
 }
 
-#[derive(Copy,Clone,Debug)]
+#[derive(Clone,Debug)]
 pub struct Msg {
     content: MsgContent,
     // Other fields

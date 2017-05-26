@@ -35,26 +35,40 @@ impl InputSystem {
 
 
 impl System for InputSystem {
-    fn init(&mut self) {}
+    fn init(&mut self) {
+        let init_msg = Msg { content: MsgContent::System(SystemMsg::SysInit) };
+        for tx in &self.msg_tx {
+            tx.send(init_msg.clone());
+        }
+    }
+
     fn main_loop(&mut self) {
         let mut should_run = true;
         while should_run {
             use glutin::WindowEvent::*;
+            use glutin::VirtualKeyCode;
             self.events_loop
                 .lock()
                 .unwrap()
                 .poll_events(|glutin::Event::WindowEvent { window_id, event }| {
-                    println!("DEBUG: Event: {:?}", event);
+                    let debug_msg = Msg { content: MsgContent::Debug(format!("{:?}", event)) };
+                    self.msg_tx[3].send(debug_msg);
                     match event {
+                        Resized(width, height) => {
+                            let resize_msg =
+                                Msg { content: MsgContent::Input(InputMsg::Resize(width, height)) };
+                            self.msg_tx[0].send(resize_msg);
+                        }
                         Closed => {
                             use super::{MsgContent, SystemMsg};
                             let halt_msg = Msg { content: MsgContent::System(SystemMsg::SysHalt) };
                             for tx in &self.msg_tx {
-                                tx.send(halt_msg).unwrap();
+                                tx.send(halt_msg.clone()).unwrap();
                             }
                             should_run = false;
                         }
-                        _ => println!("Event handling not yet implemented."),
+
+                        _ => {}
                     }
                 });
         }
