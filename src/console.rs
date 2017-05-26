@@ -15,6 +15,7 @@ impl System for ConsoleSystem {
     }
 
     fn main_loop(&mut self) {
+        println!("Console System loop.");
         println!("{:?}", self.msg_rx.recv().unwrap());
     }
 }

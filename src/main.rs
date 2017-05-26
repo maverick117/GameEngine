@@ -3,6 +3,7 @@ extern crate gfx;
 extern crate gfx_window_glutin;
 extern crate glutin;
 
+
 mod console;
 //mod render;
 mod input;
@@ -12,16 +13,21 @@ use std::sync::mpsc;
 use std::sync::mpsc::*;
 use std::thread;
 use std::sync::mpsc::channel;
+use std::sync::Arc;
+use std::sync::Mutex;
+use std::cell::UnsafeCell;
+// use input::InputSystem;
+//use render::RenderSystem;
+use console::ConsoleSystem;
+use gfx::Device;
+use std::ops::Deref;
 
-use input::InputSystem;
-/*
-static events_loop: glutin::EventsLoop;
-static builder: glutin::WindowBuilder;
+use input::*;
 
-lazy_static!{
+pub type ColorFormat = gfx::format::Rgba8;
+pub type DepthFormat = gfx::format::DepthStencil;
 
-}
-*/
+
 #[derive(Copy,Clone,Debug)]
 pub enum SystemMsg {
     SysInit,
@@ -88,19 +94,36 @@ fn main() {
     let (render_tx, render_rx) = mpsc::channel();
     let (model_tx, model_rx) = mpsc::channel();
     let (logic_tx, logic_rx) = mpsc::channel();
+    let (console_tx, console_rx) = mpsc::channel();
+
+    let events_loop = Arc::new(Mutex::new(glutin::EventsLoop::new()));
+    let builder = glutin::WindowBuilder::new()
+        .with_title("Engine Demo".to_string())
+        .with_dimensions(1024, 768)
+        .with_vsync();
+    let (window, mut device, mut factory, main_color, mut main_depth) =
+        gfx_window_glutin::init::<ColorFormat, DepthFormat>(builder,
+                                                            events_loop.lock().unwrap().deref());
+
+    let arc_window = Arc::new(Mutex::new(window));
 
     // Initialize input system
-    let input_system = InputSystem::new(vec![input_tx.clone(),
-                                             render_tx.clone(),
-                                             model_tx.clone(),
-                                             logic_tx.clone()],
+    let input_system = InputSystem::new(events_loop.clone(),
+                                        arc_window.clone(),
+                                        vec![render_tx, model_tx, logic_tx],
                                         input_rx);
+    let console_system = ConsoleSystem::new(Vec::new(), console_rx);
+
+
+
 
 
 
     let input_handle = thread::spawn(move || spawn_systems(input_system));
+    let console_handle = thread::spawn(move || spawn_systems(console_system));
 
     input_handle.join().unwrap();
+    console_handle.join().unwrap();
 
 
 }
