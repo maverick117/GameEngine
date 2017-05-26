@@ -110,7 +110,7 @@ fn main() {
     // Initialize input system
     let input_system = InputSystem::new(events_loop.clone(),
                                         arc_window.clone(),
-                                        vec![render_tx, model_tx, logic_tx],
+                                        vec![render_tx, model_tx, logic_tx, console_tx],
                                         input_rx);
     let console_system = ConsoleSystem::new(Vec::new(), console_rx);
 

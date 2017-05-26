@@ -3,6 +3,7 @@ use std::sync::mpsc::*;
 
 use super::System;
 use super::Msg;
+use super::*;
 
 pub struct ConsoleSystem {
     msg_tx: Vec<Sender<Msg>>,
@@ -15,8 +16,13 @@ impl System for ConsoleSystem {
     }
 
     fn main_loop(&mut self) {
-        println!("Console System loop.");
-        println!("{:?}", self.msg_rx.recv().unwrap());
+        loop {
+            let msg = self.msg_rx.recv().unwrap();
+            println!("Console Msg Received: {:?}", msg);
+            if let MsgContent::System(SystemMsg::SysHalt) = msg.content {
+                break;
+            }
+        }
     }
 }
 
