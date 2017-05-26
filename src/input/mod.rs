@@ -12,6 +12,17 @@ use super::System;
 use super::Msg;
 use super::*;
 
+#[derive(Copy,Clone,Debug)]
+pub enum InputMsg {
+    KeyDown(glutin::VirtualKeyCode),
+    KeyUp(glutin::VirtualKeyCode),
+    MouseMoved(i32, i32),
+    MouseDown(glutin::MouseButton),
+    MouseUp(glutin::MouseButton),
+    Resize(u32, u32),
+    Moved(i32, i32),
+}
+
 pub struct InputSystem {
     msg_tx: Vec<Sender<Msg>>,
     msg_rx: Receiver<Msg>,

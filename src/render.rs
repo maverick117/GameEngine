@@ -8,6 +8,12 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use glium::backend::glutin_backend::GlutinFacade;
 use glium::DisplayBuild;
+use glium::glutin::Event;
+
+#[derive(Clone,Debug)]
+pub enum RenderMsg {
+    InputQueue(Vec<Event>),
+}
 
 pub struct RenderSystem {
     window: GlutinFacade,

@@ -37,47 +37,13 @@ pub enum SystemMsg {
     SysFlush,
 }
 
-
-#[derive(Copy,Clone,Debug)]
-pub enum InputMsg {
-    KeyDown(glutin::VirtualKeyCode),
-    KeyUp(glutin::VirtualKeyCode),
-    MouseMoved(i32, i32),
-    MouseDown(glutin::MouseButton),
-    MouseUp(glutin::MouseButton),
-    Resize(u32, u32),
-    Moved(i32, i32),
-}
-
-#[derive(Clone,Debug)]
-pub enum RenderMsg {
-    InputQueue(Vec<Event>),
-}
-
-#[derive(Copy,Clone,Debug)]
-pub enum ModelMsg {
-
-}
-
-#[derive(Clone)]
-pub enum LogicMsg {
-    //Scene(Box<amethyst_renderer::Scene<gfx_device_gl::Resources>>),
-    //ModelReq(Box<String>),
-}
-
-impl fmt::Debug for LogicMsg {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Zean has come!")
-    }
-}
-
 #[derive(Clone,Debug)]
 pub enum MsgContent {
     System(SystemMsg),
     Input(InputMsg),
     Render(RenderMsg),
-    Model(ModelMsg),
-    Logic(LogicMsg),
+    //Model(ModelMsg),
+    //Logic(LogicMsg),
     Debug(String),
 }
 
@@ -127,21 +93,7 @@ fn main() {
                                         logic_rx);
                                         */
 
-    let audio_setting = baal::Setting {
-        effect_dir: "assets/fx".into(),
-        music_dir: "assets/stream".into(),
 
-        global_volume: 1.0,
-        music_volume: 1.0,
-        effect_volume: 1.0,
-
-        distance_model: baal::effect::DistanceModel::Linear(10., 100.),
-
-        music_transition: baal::music::MusicTransition::Instant,
-        short_effects: vec!["wowa-intro.ogg".into()],
-        persistent_effects: vec!["wowa-intro.ogg".into()],
-        musics: vec!["to_be_free.ogg".into()],
-    };
 
 
     //let audio_system = AudioSystem::new(vec![logic_tx.clone(), console_tx.clone()],
