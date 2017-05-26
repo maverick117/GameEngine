@@ -3,6 +3,7 @@ extern crate gfx;
 extern crate gfx_window_glutin;
 extern crate glutin;
 extern crate amethyst_renderer;
+extern crate gfx_device_gl;
 
 mod console;
 //mod render;
@@ -16,6 +17,7 @@ use std::sync::mpsc::channel;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::cell::UnsafeCell;
+use std::fmt;
 // use input::InputSystem;
 //use render::RenderSystem;
 use console::ConsoleSystem;
@@ -23,7 +25,7 @@ use gfx::Device;
 use std::ops::Deref;
 
 use input::*;
-
+use gfx_device_gl::Resources;
 pub type ColorFormat = gfx::format::Rgba8;
 pub type DepthFormat = gfx::format::DepthStencil;
 
@@ -58,8 +60,16 @@ pub enum ModelMsg {
 
 }
 
-#[derive(Copy,Clone,Debug)]
+#[derive(Clone)]
 pub enum LogicMsg {
+    Scene(Box<amethyst_renderer::Scene<gfx_device_gl::Resources>>),
+    ModelReq(Arc<Mutex<std::path::Path>>),
+}
+
+impl fmt::Debug for LogicMsg {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Zean has come!")
+    }
 }
 
 #[derive(Clone,Debug)]
