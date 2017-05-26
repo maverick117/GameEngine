@@ -1,35 +1,28 @@
 /* Input module */
 
-use glutin;
+use glium;
+use glium::glutin;
 use std::sync::mpsc::*;
 use std::sync::{Arc, Mutex};
-use glutin::WindowEvent;
+use glium::glutin::Event;
+use glium::backend::glutin_backend::GlutinFacade;
+
 
 use super::System;
 use super::Msg;
 use super::*;
 
 pub struct InputSystem {
-    events_loop: Arc<Mutex<glutin::EventsLoop>>,
-    window: Arc<Mutex<glutin::Window>>,
     msg_tx: Vec<Sender<Msg>>,
     msg_rx: Receiver<Msg>,
 }
 
 impl InputSystem {
-    pub fn new(events_loop: Arc<Mutex<glutin::EventsLoop>>,
-               window: Arc<Mutex<glutin::Window>>,
-               msg_tx: Vec<Sender<Msg>>,
-               msg_rx: Receiver<Msg>)
-               -> InputSystem {
-
+    pub fn new(msg_tx: Vec<Sender<Msg>>, msg_rx: Receiver<Msg>) -> InputSystem {
         InputSystem {
-            events_loop: events_loop,
-            window: window,
             msg_tx: msg_tx,
             msg_rx: msg_rx,
         }
-
     }
 }
 
@@ -45,12 +38,11 @@ impl System for InputSystem {
     fn main_loop(&mut self) {
         let mut should_run = true;
         while should_run {
-            use glutin::WindowEvent::*;
+            use glutin::Event::*;
             use glutin::VirtualKeyCode;
-            self.events_loop
-                .lock()
-                .unwrap()
-                .poll_events(|glutin::Event::WindowEvent { window_id, event }| {
+            if let MsgContent::Render(RenderMsg::InputQueue(queue)) =
+                self.msg_rx.recv().unwrap().content {
+                for event in queue {
                     let debug_msg = Msg { content: MsgContent::Debug(format!("{:?}", event)) };
                     self.msg_tx[3].send(debug_msg);
                     match event {
@@ -67,7 +59,7 @@ impl System for InputSystem {
                             }
                             should_run = false;
                         }
-                        KeyboardInput(state, ch, Some(key), _) => {
+                        KeyboardInput(state, ch, Some(key)) => {
                             match state {
                                 glutin::ElementState::Pressed => {
                                     let pressed_msg =
@@ -90,7 +82,8 @@ impl System for InputSystem {
 
                         _ => {}
                     }
-                });
+                }
+            }
         }
     }
 

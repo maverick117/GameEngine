@@ -2,12 +2,10 @@
 use baal;
 use std::sync::mpsc::*;
 use std::sync::{Arc, Mutex};
-use glutin::WindowEvent;
 
 use super::System;
 use super::Msg;
 use super::*;
-use model::*;
 
 pub struct AudioSystem {
     msg_tx: Vec<Sender<Msg>>,
@@ -29,6 +27,7 @@ impl System for AudioSystem {
             while let Ok(msg) = self.msg_rx.try_recv() {
                 cmd_queue.push(msg);
             }
+            continue;
             for m in cmd_queue {
                 self.msg_tx[1]
                     .send(Msg {
@@ -48,14 +47,25 @@ impl System for AudioSystem {
 }
 
 impl AudioSystem {
-    pub fn new(msg_tx: Vec<Sender<Msg>>,
-               msg_rx: Receiver<Msg>,
-               setting: baal::Setting)
-               -> AudioSystem {
+    pub fn new(msg_tx: Vec<Sender<Msg>>, msg_rx: Receiver<Msg>) -> AudioSystem {
         AudioSystem {
             msg_tx: msg_tx,
             msg_rx: msg_rx,
-            setting: setting,
+            setting: baal::Setting {
+                effect_dir: "assets/fx".into(),
+                music_dir: "assets/stream".into(),
+
+                global_volume: 1.0,
+                music_volume: 1.0,
+                effect_volume: 1.0,
+
+                distance_model: baal::effect::DistanceModel::Linear(10., 100.),
+
+                music_transition: baal::music::MusicTransition::Instant,
+                short_effects: vec!["wowa-intro.ogg".into()],
+                persistent_effects: vec!["wowa-intro.ogg".into()],
+                musics: vec!["to_be_free.ogg".into()],
+            },
         }
     }
 }

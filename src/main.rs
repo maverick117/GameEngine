@@ -1,16 +1,12 @@
 #[macro_use]
-extern crate gfx;
-extern crate gfx_window_glutin;
-extern crate glutin;
-extern crate amethyst_renderer;
-extern crate gfx_device_gl;
+extern crate glium;
 extern crate baal;
 
 mod console;
-//mod render;
-mod logic;
+mod render;
+//mod logic;
 mod input;
-mod model;
+//mod model;
 mod audio;
 
 use std::sync::mpsc;
@@ -21,18 +17,17 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use std::cell::UnsafeCell;
 use std::fmt;
-// use input::InputSystem;
-//use render::RenderSystem;
+use input::InputSystem;
+use render::*;
 use console::ConsoleSystem;
-use gfx::Device;
+
 use std::ops::Deref;
 use audio::*;
 use input::*;
-use logic::LogicSystem;
-use gfx_device_gl::Resources;
-pub type ColorFormat = gfx::format::Rgba8;
-pub type DepthFormat = gfx::format::DepthStencil;
-
+//use logic::LogicSystem;
+use glium::glutin::Event;
+use glium::glutin;
+use glium::DisplayBuild;
 
 #[derive(Copy,Clone,Debug)]
 pub enum SystemMsg {
@@ -54,9 +49,9 @@ pub enum InputMsg {
     Moved(i32, i32),
 }
 
-#[derive(Copy,Clone,Debug)]
+#[derive(Clone,Debug)]
 pub enum RenderMsg {
-
+    InputQueue(Vec<Event>),
 }
 
 #[derive(Copy,Clone,Debug)]
@@ -98,10 +93,12 @@ pub trait System {
 }
 
 
-fn spawn_systems<T>(mut sys: T)
-    where T: System
+fn spawn_systems<T, F>(some_closure: F, msg_tx: Vec<Sender<Msg>>, msg_rx: Receiver<Msg>)
+    where T: System,
+          F: Fn(Vec<Sender<Msg>>, Receiver<Msg>) -> T
 {
     println!("Spawning systems");
+    let mut sys = some_closure(msg_tx, msg_rx);
     sys.init();
     sys.main_loop();
 }
@@ -111,40 +108,24 @@ fn main() {
     println!("Welcome to Game Engine. Initializing all systems");
 
     // Create tunnels for message passing
+
     let (input_tx, input_rx) = mpsc::channel();
     let (render_tx, render_rx) = mpsc::channel();
     let (model_tx, model_rx) = mpsc::channel();
     let (logic_tx, logic_rx) = mpsc::channel();
     let (console_tx, console_rx) = mpsc::channel();
     let (audio_tx, audio_rx) = mpsc::channel();
+    let (main_tx, main_rx) = mpsc::channel();
 
-    let events_loop = Arc::new(Mutex::new(glutin::EventsLoop::new()));
-    let builder = glutin::WindowBuilder::new()
-        .with_title("Engine Demo".to_string())
-        .with_dimensions(1024, 768)
-        .with_vsync();
-    let (window, mut device, mut factory, main_color, mut main_depth) =
-        gfx_window_glutin::init::<ColorFormat, DepthFormat>(builder,
-                                                            events_loop.lock().unwrap().deref());
+    //let console_system = ConsoleSystem::new(Vec::new(), console_rx);
 
-    let arc_window = Arc::new(Mutex::new(window));
-
-    // Initialize input system
-    let input_system = InputSystem::new(events_loop.clone(),
-                                        arc_window.clone(),
-                                        vec![render_tx.clone(),
-                                             model_tx.clone(),
-                                             logic_tx.clone(),
-                                             console_tx.clone(),
-                                             audio_tx.clone()],
-                                        input_rx);
-    let console_system = ConsoleSystem::new(Vec::new(), console_rx);
-
+    /*
     let logic_system = LogicSystem::new(vec![render_tx.clone(),
                                              model_tx.clone(),
                                              console_tx.clone(),
                                              audio_tx.clone()],
                                         logic_rx);
+                                        */
 
     let audio_setting = baal::Setting {
         effect_dir: "assets/fx".into(),
@@ -163,21 +144,56 @@ fn main() {
     };
 
 
-    let audio_system = AudioSystem::new(vec![logic_tx.clone(), console_tx.clone()],
-                                        audio_rx,
-                                        audio_setting);
+    //let audio_system = AudioSystem::new(vec![logic_tx.clone(), console_tx.clone()],
+    //audio_rx,
+    //audio_setting);
 
 
 
-
-    let input_handle = thread::spawn(move || spawn_systems(input_system));
-    let console_handle = thread::spawn(move || spawn_systems(console_system));
-    let logic_handle = thread::spawn(move || spawn_systems(logic_system));
-    let audio_handle = thread::spawn(move || spawn_systems(audio_system));
+    let tmp_vec = vec![render_tx.clone(),
+                       model_tx.clone(),
+                       logic_tx.clone(),
+                       console_tx.clone(),
+                       audio_tx.clone(),
+                       main_tx.clone()];
+    let input_handle =
+        thread::spawn(move || {
+                          spawn_systems(|msg_tx, msg_rx| InputSystem::new(msg_tx, msg_rx),
+                                        tmp_vec,
+                                        input_rx)
+                      });
+    let tmp_vec = vec![input_tx.clone(),
+                       model_tx.clone(),
+                       logic_tx.clone(),
+                       console_tx.clone(),
+                       audio_tx.clone(),
+                       main_tx.clone()];
+    let render_handle =
+        thread::spawn(move || {
+                          spawn_systems(|msg_tx, msg_rx| RenderSystem::new(msg_tx, msg_rx),
+                                        tmp_vec,
+                                        render_rx)
+                      });
+    let tmp_vec = vec![input_tx.clone(),
+                       render_tx.clone(),
+                       model_tx.clone(),
+                       logic_tx.clone(),
+                       console_tx.clone(),
+                       main_tx.clone()];
+    let audio_handle =
+        thread::spawn(move || {
+                          spawn_systems(|msg_tx, msg_rx| AudioSystem::new(msg_tx, msg_rx),
+                                        tmp_vec,
+                                        audio_rx)
+                      });
+    //let console_handle = thread::spawn(move || spawn_systems(console_system));
+    //let logic_handle = thread::spawn(move || spawn_systems(logic_system));
+    //let audio_handle = thread::spawn(move || spawn_systems(audio_system));
 
     input_handle.join().unwrap();
-    console_handle.join().unwrap();
-    logic_handle.join().unwrap();
+    render_handle.join().unwrap();
+    //console_handle.join().unwrap();
+    //logic_handle.join().unwrap();
     audio_handle.join().unwrap();
 
 

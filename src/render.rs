@@ -1,23 +1,16 @@
-use gfx;
-use gfx_window_glutin;
-use glutin;
+use glium;
+use glium::glutin;
 
 use std::sync::mpsc::*;
 use super::System;
 use super::Msg;
 use std::sync::Arc;
 use std::sync::Mutex;
-
-
-pub type ColorFormat = gfx::format::Rgba8;
-pub type DepthFormat = gfx::format::DepthStencil;
+use glium::backend::glutin_backend::GlutinFacade;
+use glium::DisplayBuild;
 
 pub struct RenderSystem {
-    title: String,
-    width: i32,
-    height: i32,
-    events_loop: Arc<Mutex<glutin::EventsLoop>>,
-    window: Arc<Mutex<glutin::Window>>,
+    window: GlutinFacade,
     msg_tx: Vec<Sender<Msg>>,
     msg_rx: Receiver<Msg>,
 
@@ -66,16 +59,17 @@ impl System for RenderSystem {
 }
 
 impl RenderSystem {
-    pub fn new(title: String,
-               width: i32,
-               height: i32,
-               events_loop: Arc<Mutex<glutin::EventsLoop>>)
-               -> RenderSystem {
+    pub fn new(msg_tx: Vec<Sender<Msg>>, msg_rx: Receiver<Msg>) -> RenderSystem {
         RenderSystem {
-            title: title,
-            width: width,
-            height: height,
-            events_loop: events_loop,
+            window: glutin::WindowBuilder::new()
+                .with_title("Engine Demo".to_string())
+                .with_dimensions(1024, 768)
+                .with_vsync()
+                .with_depth_buffer(24)
+                .build_glium()
+                .unwrap(),
+            msg_tx: msg_tx,
+            msg_rx: msg_rx,
         }
     }
 }
