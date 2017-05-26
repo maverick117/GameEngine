@@ -1,6 +1,11 @@
 [package]
 name = "rust_engine"
-version = "0.1.0"
-authors = ["Andrew Jianzhong Liu <liujzh@shanghaitech.edu.cn>"]
+version = "0.1.1"
+authors = ["Andrew Jianzhong Liu <liujzh@shanghaitech.edu.cn>", "Momo Yimo Chen <chenym@shanghaitech.edu.cn>", "Zean Zhou <zhouza@shanghaitech.edu.cn>"]
 
 [dependencies]
+gfx = "0.15"
+glutin ="*"
+gfx_window_glutin = "*"
+obj-rs = "0.4"
+amethyst_renderer = "0.4.2"
