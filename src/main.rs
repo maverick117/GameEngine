@@ -7,6 +7,7 @@ extern crate gfx_device_gl;
 
 mod console;
 //mod render;
+mod logic;
 mod input;
 mod model;
 
@@ -25,6 +26,7 @@ use gfx::Device;
 use std::ops::Deref;
 
 use input::*;
+use logic::LogicSystem;
 use gfx_device_gl::Resources;
 pub type ColorFormat = gfx::format::Rgba8;
 pub type DepthFormat = gfx::format::DepthStencil;
@@ -62,8 +64,8 @@ pub enum ModelMsg {
 
 #[derive(Clone)]
 pub enum LogicMsg {
-    Scene(Box<amethyst_renderer::Scene<gfx_device_gl::Resources>>),
-    ModelReq(Box<String>),
+    //Scene(Box<amethyst_renderer::Scene<gfx_device_gl::Resources>>),
+    //ModelReq(Box<String>),
 }
 
 impl fmt::Debug for LogicMsg {
@@ -127,10 +129,16 @@ fn main() {
     // Initialize input system
     let input_system = InputSystem::new(events_loop.clone(),
                                         arc_window.clone(),
-                                        vec![render_tx, model_tx, logic_tx, console_tx],
+                                        vec![render_tx.clone(),
+                                             model_tx.clone(),
+                                             logic_tx.clone(),
+                                             console_tx.clone()],
                                         input_rx);
     let console_system = ConsoleSystem::new(Vec::new(), console_rx);
 
+    let logic_system =
+        LogicSystem::new(vec![render_tx.clone(), model_tx.clone(), console_tx.clone()],
+                         logic_rx);
 
 
 
@@ -138,9 +146,11 @@ fn main() {
 
     let input_handle = thread::spawn(move || spawn_systems(input_system));
     let console_handle = thread::spawn(move || spawn_systems(console_system));
+    let logic_handle = thread::spawn(move || spawn_systems(logic_system));
 
     input_handle.join().unwrap();
     console_handle.join().unwrap();
+    logic_handle.join().unwrap();
 
 
 }
