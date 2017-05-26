@@ -5,7 +5,7 @@ authors = ["Andrew Jianzhong Liu <liujzh@shanghaitech.edu.cn>", "Momo Yimo Chen 
 
 [dependencies]
 gfx = "0.15"
-glutin ="*"
-gfx_window_glutin = "*"
+glutin ="0.8.0"
+gfx_window_glutin = "0.16.0"
 obj-rs = "0.4"
 amethyst_renderer = "0.4.2"
