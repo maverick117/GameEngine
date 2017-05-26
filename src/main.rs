@@ -4,12 +4,14 @@ extern crate gfx_window_glutin;
 extern crate glutin;
 extern crate amethyst_renderer;
 extern crate gfx_device_gl;
+extern crate baal;
 
 mod console;
 //mod render;
 mod logic;
 mod input;
 mod model;
+mod audio;
 
 use std::sync::mpsc;
 use std::sync::mpsc::*;
@@ -24,7 +26,7 @@ use std::fmt;
 use console::ConsoleSystem;
 use gfx::Device;
 use std::ops::Deref;
-
+use audio::*;
 use input::*;
 use logic::LogicSystem;
 use gfx_device_gl::Resources;
@@ -114,6 +116,7 @@ fn main() {
     let (model_tx, model_rx) = mpsc::channel();
     let (logic_tx, logic_rx) = mpsc::channel();
     let (console_tx, console_rx) = mpsc::channel();
+    let (audio_tx, audio_rx) = mpsc::channel();
 
     let events_loop = Arc::new(Mutex::new(glutin::EventsLoop::new()));
     let builder = glutin::WindowBuilder::new()
@@ -132,14 +135,37 @@ fn main() {
                                         vec![render_tx.clone(),
                                              model_tx.clone(),
                                              logic_tx.clone(),
-                                             console_tx.clone()],
+                                             console_tx.clone(),
+                                             audio_tx.clone()],
                                         input_rx);
     let console_system = ConsoleSystem::new(Vec::new(), console_rx);
 
-    let logic_system =
-        LogicSystem::new(vec![render_tx.clone(), model_tx.clone(), console_tx.clone()],
-                         logic_rx);
+    let logic_system = LogicSystem::new(vec![render_tx.clone(),
+                                             model_tx.clone(),
+                                             console_tx.clone(),
+                                             audio_tx.clone()],
+                                        logic_rx);
 
+    let audio_setting = baal::Setting {
+        effect_dir: "assets/fx".into(),
+        music_dir: "assets/stream".into(),
+
+        global_volume: 1.0,
+        music_volume: 1.0,
+        effect_volume: 1.0,
+
+        distance_model: baal::effect::DistanceModel::Linear(10., 100.),
+
+        music_transition: baal::music::MusicTransition::Instant,
+        short_effects: vec!["wowa-intro.ogg".into()],
+        persistent_effects: vec!["wowa-intro.ogg".into()],
+        musics: vec!["to_be_free.ogg".into()],
+    };
+
+
+    let audio_system = AudioSystem::new(vec![logic_tx.clone(), console_tx.clone()],
+                                        audio_rx,
+                                        audio_setting);
 
 
 
@@ -147,10 +173,12 @@ fn main() {
     let input_handle = thread::spawn(move || spawn_systems(input_system));
     let console_handle = thread::spawn(move || spawn_systems(console_system));
     let logic_handle = thread::spawn(move || spawn_systems(logic_system));
+    let audio_handle = thread::spawn(move || spawn_systems(audio_system));
 
     input_handle.join().unwrap();
     console_handle.join().unwrap();
     logic_handle.join().unwrap();
+    audio_handle.join().unwrap();
 
 
 }

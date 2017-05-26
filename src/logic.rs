@@ -29,7 +29,7 @@ pub struct LogicSystem {
     mouse_x: i32,
     mouse_y: i32,
     object_list: Vec<Object>,
-    selected_object_index: u32,
+    selected_object_index: usize,
 }
 
 impl System for LogicSystem {
