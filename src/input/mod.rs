@@ -67,6 +67,26 @@ impl System for InputSystem {
                             }
                             should_run = false;
                         }
+                        KeyboardInput(state, ch, Some(key), _) => {
+                            match state {
+                                glutin::ElementState::Pressed => {
+                                    let pressed_msg =
+                                        Msg { content: MsgContent::Input(InputMsg::KeyDown(key)) };
+                                    self.msg_tx[2].send(pressed_msg);
+                                }
+                                glutin::ElementState::Released => {
+                                    let lifted_msg =
+                                        Msg { content: MsgContent::Input(InputMsg::KeyUp(key)) };
+                                    self.msg_tx[2].send(lifted_msg);
+                                }
+                            };
+                        }
+                        MouseMoved(xcoord, ycoord) => {
+                            let mouse_move_msg = Msg {
+                                content: MsgContent::Input(InputMsg::MouseMoved(xcoord, ycoord)),
+                            };
+                            self.msg_tx[2].send(mouse_move_msg);
+                        }
 
                         _ => {}
                     }
