@@ -7,13 +7,29 @@ use glutin::WindowEvent;
 use super::System;
 use super::Msg;
 use super::*;
+use model::*;
+
+struct Object {}
+
+impl Object {
+    fn new() -> Object {
+        Object {}
+    }
+
+    fn translate(&mut self, dx: f64, dy: f64, dz: f64) {}
+    fn rotate(&mut self, rad: f64) {}
+    fn scale(&mut self, s: f64) {}
+
+    fn gen_fragment(&self) {} // TODO: generate fragment
+}
 
 pub struct LogicSystem {
     msg_tx: Vec<Sender<Msg>>,
     msg_rx: Receiver<Msg>,
     mouse_x: i32,
     mouse_y: i32,
-    // object_list: Vec<Object>,
+    object_list: Vec<Object>,
+    selected_object_index: u32,
 }
 
 impl System for LogicSystem {
@@ -38,6 +54,12 @@ impl System for LogicSystem {
                     c => {}
                 }
             }
+
+            // For all objects, continue on their trajectories
+
+            // Generate fragments
+
+            // Pass to renderer
         }
     }
 }
@@ -49,10 +71,34 @@ impl LogicSystem {
             msg_rx: msg_rx,
             mouse_x: 0,
             mouse_y: 0,
+            object_list: Vec::new(),
+            selected_object_index: 0,
         }
     }
 
-    fn process_keydown(&mut self, key: glutin::VirtualKeyCode) {}
+    fn process_keydown(&mut self, key: glutin::VirtualKeyCode) {
+        // Logic for key down
+        use glutin::VirtualKeyCode::*;
+        match key {
+            Up => {
+                self.object_list[self.selected_object_index].translate(0.0, 0.1, 0.0);
+            }
+            Down => {
+                self.object_list[self.selected_object_index].translate(0.0, -0.1, 0.0);
+            }
+            Left => {
+                self.object_list[self.selected_object_index].translate(0.1, 0.0, 0.0);
+            }
+            Right => {
+                self.object_list[self.selected_object_index].translate(-0.1, 0.0, 0.0);
+            }
+            Space => {
+                // Generate another projectile
+            }
+            Snapshot => {}
+            _ => {}
+        }
+    }
 
     fn process_keyup(&mut self, key: glutin::VirtualKeyCode) {}
 
