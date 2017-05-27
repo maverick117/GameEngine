@@ -8,7 +8,7 @@ mod render;
 mod logic;
 mod input;
 mod model;
-mod audio;
+// mod audio;
 
 use std::sync::mpsc;
 use std::sync::mpsc::*;
@@ -23,8 +23,9 @@ use render::*;
 use console::ConsoleSystem;
 
 use std::ops::Deref;
-use audio::*;
+// use audio::*;
 use input::*;
+use model::*;
 use logic::LogicSystem;
 use glium::glutin::Event;
 use glium::glutin;
@@ -43,7 +44,7 @@ pub enum MsgContent {
     System(SystemMsg),
     Input(InputMsg),
     Render(RenderMsg),
-    //Model(ModelMsg),
+    Model(ModelMsg),
     //Logic(LogicMsg),
     Debug(String),
 }
@@ -82,14 +83,12 @@ fn main() {
     let (logic_tx, logic_rx) = mpsc::channel();
     let (console_tx, console_rx) = mpsc::channel();
     let (audio_tx, audio_rx) = mpsc::channel();
-    let (main_tx, main_rx) = mpsc::channel();
 
     let tmp_vec = vec![render_tx.clone(),
                        model_tx.clone(),
                        logic_tx.clone(),
                        console_tx.clone(),
-                       audio_tx.clone(),
-                       main_tx.clone()];
+                       audio_tx.clone()];
     let input_handle =
         thread::spawn(move || {
                           spawn_systems(|msg_tx, msg_rx| InputSystem::new(msg_tx, msg_rx),
@@ -100,8 +99,7 @@ fn main() {
                        model_tx.clone(),
                        logic_tx.clone(),
                        console_tx.clone(),
-                       audio_tx.clone(),
-                       main_tx.clone()];
+                       audio_tx.clone()];
     let render_handle =
         thread::spawn(move || {
                           spawn_systems(|msg_tx, msg_rx| RenderSystem::new(msg_tx, msg_rx),
@@ -112,8 +110,7 @@ fn main() {
                        render_tx.clone(),
                        model_tx.clone(),
                        logic_tx.clone(),
-                       console_tx.clone(),
-                       main_tx.clone()];
+                       console_tx.clone()];
     let audio_handle =
         thread::spawn(move || {
                           spawn_systems(|msg_tx, msg_rx| AudioSystem::new(msg_tx, msg_rx),
@@ -124,13 +121,23 @@ fn main() {
                        render_tx.clone(),
                        model_tx.clone(),
                        logic_tx.clone(),
-                       audio_tx.clone(),
-                       main_tx.clone()];
+                       audio_tx.clone()];
     let console_handle =
         thread::spawn(move || {
                           spawn_systems(|msg_tx, msg_rx| ConsoleSystem::new(msg_tx, msg_rx),
                                         tmp_vec,
                                         console_rx)
+                      });
+    let tmp_vec = vec![input_tx.clone(),
+                       render_tx.clone(),
+                       console_tx.clone(),
+                       logic_tx.clone(),
+                       audio_tx.clone()];
+    let model_handle =
+        thread::spawn(move || {
+                          spawn_systems(|msg_tx, msg_rx| ModelSystem::new(msg_tx, msg_rx),
+                                        tmp_vec,
+                                        model_rx)
                       });
     //let logic_handle = thread::spawn(move || spawn_systems(logic_system));
     //let audio_handle = thread::spawn(move || spawn_systems(audio_system));
@@ -140,6 +147,7 @@ fn main() {
     console_handle.join().unwrap();
     //logic_handle.join().unwrap();
     audio_handle.join().unwrap();
+    model_handle.join().unwrap();
 
 
 }
