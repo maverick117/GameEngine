@@ -12,12 +12,11 @@ use super::*;
 use model::*;
 use cgmath::*;
 use render::*;
-
+use tool::*;
 
 #[derive(Clone)]
 pub enum LogicMsg {
-    //Scene(Box<amethyst_renderer::Scene<gfx_device_gl::Resources>>),
-    ModelReq(Box<String>),
+    ModelReq(String),
     SceneSnd(Scene),
 }
 
@@ -33,7 +32,14 @@ pub struct Light {
     ambient: cgmath::Vector3<f32>,
     diffuse: cgmath::Vector3<f32>,
     speculer: cgmath::Vector3<f32>,
+}
 
+#[derive(Debug)]
+enum Axis {
+    Axis_x,
+    Axis_y,
+    Axis_z,
+    Axis_any(Vector3<f32>),
 }
 
 #[derive(Clone, Debug)]
@@ -51,24 +57,37 @@ impl Object {
         Object {
             models: models,
             materials: materials,
-            translate_matrix: Matrix4::identity(),
-            rotate_matrix: Matrix4::identity(),
-            scale_matrix: Matrix4::identity(),
+            translate_matrix: Matrix4::from_translation(Vector3::new(0.0, 0.0, 0.0)),
+            rotate_matrix: Matrix4::from_angle_x(Rad(0.0)),
+            scale_matrix: Matrix4::from_scale(1.0),
+            model_transform_matrix: [[1.0, 0.0, 0.0, 0.0],
+                                     [0.0, 1.0, 0.0, 0.0],
+                                     [0.0, 0.0, 1.0, 0.0],
+                                     [0.0, 0.0, 0.0, 1.0]],
             path: path,
         }
     }
 
-    pub fn add_model(&mut self, models: Vec<Model>) {
-        for m in models {
-            self.models.push(m);
-        }
+    fn translate(&mut self, dx: f32, dy: f32, dz: f32) {
+        self.translate_matrix = Matrix4::from_translation(Vector3::new(dx, dy, dz)) *
+                                self.translate_matrix;
     }
-
-    fn translate(&mut self, dx: f64, dy: f64, dz: f64) {}
-    fn rotate(&mut self, rad: f64) {}
-    fn scale(&mut self, s: f64) {}
-
-    fn gen_fragment(&self) {} // TODO: generate fragment
+    fn rotate(&mut self, axis: Axis, angle: f32) {
+        let rot = match axis {
+            Axis::Axis_x => Matrix4::from_angle_x(Deg(angle)),
+            Axis::Axis_y => Matrix4::from_angle_y(Deg(angle)),
+            Axis::Axis_z => Matrix4::from_angle_z(Deg(angle)),
+            Axis::Axis_any(v) => Matrix4::from_axis_angle(v, Deg(angle)),
+        };
+        self.rotate_matrix = rot * self.rotate_matrix;
+    }
+    fn scale(&mut self, ratio: f32) {
+        self.scale_matrix = Matrix4::from_scale(ratio) * self.scale_matrix;
+    }
+    fn flush(&mut self) {
+        let result = self.translate_matrix * self.scale_matrix * self.rotate_matrix;
+        self.model_transform_matrix = result.getArray();
+    }
 }
 
 pub struct LogicSystem {

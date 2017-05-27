@@ -10,6 +10,11 @@ mod logic;
 mod input;
 mod model;
 mod audio;
+mod tool;
+
+use glium::glutin::Event;
+use glium::glutin;
+use glium::DisplayBuild;
 
 use std::sync::mpsc;
 use std::sync::mpsc::*;
@@ -19,18 +24,15 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use std::cell::UnsafeCell;
 use std::fmt;
-use input::InputSystem;
-use render::*;
-use console::ConsoleSystem;
-
 use std::ops::Deref;
+
 use audio::*;
 use input::*;
 use model::*;
-use logic::LogicSystem;
-use glium::glutin::Event;
-use glium::glutin;
-use glium::DisplayBuild;
+use render::*;
+use console::*;
+use logic::*;
+
 
 #[derive(Copy,Clone,Debug)]
 pub enum SystemMsg {
@@ -46,7 +48,7 @@ pub enum MsgContent {
     Input(InputMsg),
     Render(RenderMsg),
     Model(ModelMsg),
-    //Logic(LogicMsg),
+    Logic(LogicMsg),
     Debug(String),
 }
 

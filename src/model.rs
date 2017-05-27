@@ -4,20 +4,17 @@ use std::path::{Path, PathBuf};
 use std::sync::mpsc::*;
 use glium::vertex::VertexBufferAny;
 use glium::glutin::Event;
+use logic::Object;
 use System;
 use Msg;
 
 #[derive(Clone,Debug)]
 pub enum ModelMsg {
-    ModelAck(bool),
-    ModelResult(Option<tobj::Model>),
-    MaterialAck(bool),
-    MaterialResult(Option<tobj::Material>),
+    ObjectResult(Option<Object>),
 }
 
 pub struct ModelSystem {
-    models: Vec<tobj::Model>,
-    materials: Vec<tobj::Material>,
+    objects: Vec<Object>,
     msg_tx: Vec<Sender<Msg>>,
     msg_rx: Receiver<Msg>,
     //model_path: PathBuf,
@@ -31,18 +28,13 @@ impl System for ModelSystem {
             if let Ok(entry) = entry {
                 let load_result = tobj::load_obj(&entry.path());
                 let (models, materials) = load_result.expect("Load object failed");
-                for m in models {
-                    self.models.push(m);
-                }
-                for m in materials {
-                    self.materials.push(m);
-                }
-
+                self.objects
+                    .push(Object::new(models,
+                                      materials,
+                                      entry.path().into_os_string().into_string().unwrap()));
             }
         }
-        println!("Model load finished. Models: {:?}, Materials: {:?}",
-                 self.models,
-                 self.materials);
+        println!("Model load finished. Objects: {:?}", self.objects);
     }
     fn main_loop(&mut self) {
         let mut should_run = true;
@@ -56,9 +48,13 @@ impl System for ModelSystem {
                 use Event::*;
                 use MsgContent::*;
                 use SystemMsg::*;
+                use logic::LogicMsg::*;
                 match msg.content {
                     System(SysHalt) => should_run = false,
-                    _ => {}
+                    Logic(ModelReq(s)) => {}
+                    _ => {
+                        unimplemented!();
+                    }
                 }
             }
         }
@@ -69,8 +65,7 @@ impl System for ModelSystem {
 impl ModelSystem {
     pub fn new(msg_tx: Vec<Sender<Msg>>, msg_rx: Receiver<Msg>) -> ModelSystem {
         ModelSystem {
-            models: Vec::new(),
-            materials: Vec::new(),
+            objects: Vec::new(),
             msg_tx: msg_tx,
             msg_rx: msg_rx,
             //model_path: PathBuf::new(),
