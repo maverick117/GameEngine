@@ -8,10 +8,12 @@ use super::System;
 use super::Msg;
 use super::*;
 use model::*;
+use render::*;
 #[derive(Clone)]
 pub enum LogicMsg {
     //Scene(Box<amethyst_renderer::Scene<gfx_device_gl::Resources>>),
-    //ModelReq(Box<String>),
+    ModelReq(Box<String>),
+    SceneSnt(Scene),
 }
 
 impl fmt::Debug for LogicMsg {

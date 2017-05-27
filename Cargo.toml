@@ -5,4 +5,5 @@ authors = ["Andrew Jianzhong Liu <liujzh@shanghaitech.edu.cn>", "Momo Yimo Chen 
 
 [dependencies]
 glium = "*"
-baal = "0.5.1"
+#baal = "0.5.1"
+cgmath = "*"
