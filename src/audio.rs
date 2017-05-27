@@ -27,7 +27,6 @@ impl System for AudioSystem {
             while let Ok(msg) = self.msg_rx.try_recv() {
                 cmd_queue.push(msg);
             }
-            continue;
             for m in cmd_queue {
                 self.msg_tx[1]
                     .send(Msg {

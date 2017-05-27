@@ -51,8 +51,9 @@ impl System for InputSystem {
         while should_run {
             use glutin::Event::*;
             use glutin::VirtualKeyCode;
-            if let MsgContent::Render(RenderMsg::InputQueue(queue)) =
-                self.msg_rx.recv().unwrap().content {
+            if let Ok(Msg { content: MsgContent::Render(RenderMsg::InputQueue(queue)) }) =
+                self.msg_rx.try_recv() {
+                println!("{:?}", queue);
                 for event in queue {
                     let debug_msg = Msg { content: MsgContent::Debug(format!("{:?}", event)) };
                     self.msg_tx[3].send(debug_msg);
@@ -96,6 +97,8 @@ impl System for InputSystem {
                 }
             }
         }
+        while let Ok(_) = self.msg_rx.try_recv() {}
+        println!("Input exited");
     }
 
     //fn set_rx(&mut self, msg_tx: Receiver<Msg>) {}

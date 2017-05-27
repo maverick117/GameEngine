@@ -19,48 +19,36 @@ pub struct RenderSystem {
     window: GlutinFacade,
     msg_tx: Vec<Sender<Msg>>,
     msg_rx: Receiver<Msg>,
-
-    // builder: glutin::WindowBuilder,
-    // encoder: gfx::Encoder<i32, i32 > ,
-    // window: Arc<Mutex<glutin::Window>>,
-    // device: gfx::Device,
-    // factory: gfx::Factory,
-    // main_color: gfx::handle::RenderTargetView<glutin::VirtualKeyCode::R, RenderFormat>,
-    // main_depth: gfx::handle::DepthStencilView<glutin::VirtualKeyCode::R, DepthFormat>
-    // main_color: i32,
-    // main_depth: i32
 }
 
 impl System for RenderSystem {
-    fn init(&mut self) {
-        // self.events_loop = glutin::EventsLoop::new();
-        // self.builder = glutin::WindowBuilder::new()
-        //     .with_title("Game window".to_string())
-        //     .with_dimensions(1024, 768)
-        //     .with_vsync();
-        // // (self.window, self.device, self.factory, self.main_color, self.main_depth) =
-        // //     gfx_window_glutin::init::<ColorFormat, DepthFormat>(self.builder, &self.events_loop);
-        // // self.encoder = self.factory.create_command_buffer().into();
-        // let (window, device, factory, main_color, main_depth) =
-        //     gfx_window_glutin::init::<ColorFormat, DepthFormat>(self.builder, &self.events_loop);
-        // let encoder = factory.create_command_buffer().into();
-
-        // main_color = main_color + 1;
-        // main_depth = main_depth + 1;
-        // encoder = encoder + 1;
-
-
-    }
+    fn init(&mut self) {}
     fn main_loop(&mut self) {
-        // let mut running = true;
-        // while running {
-        //     // fetch events
-
-
-        //     // draw a frame
-        //     self.encoder.flush(&mut self.device);
-        //     self.window.swap_buffers().unwrap();
-        // }
+        let mut should_run = true;
+        while should_run {
+            let event_list: Vec<Event> = self.window.poll_events().collect();
+            if event_list.len() > 0 {
+                println!("{:?}", event_list);
+                use MsgContent::*;
+                let event_msg = Msg { content: Render(RenderMsg::InputQueue(event_list)) };
+                self.msg_tx[0].send(event_msg).unwrap();
+            }
+            let mut msg_list: Vec<Msg> = Vec::new();
+            while let Ok(msg) = self.msg_rx.try_recv() {
+                msg_list.push(msg);
+            }
+            for msg in msg_list {
+                println!("Render received: {:?}", msg);
+                use Event::*;
+                use MsgContent::*;
+                use SystemMsg::*;
+                match msg.content {
+                    System(SysHalt) => should_run = false,
+                    _ => {}
+                }
+            }
+        }
+        println!("Render exited");
     }
 }
 
@@ -77,5 +65,13 @@ impl RenderSystem {
             msg_tx: msg_tx,
             msg_rx: msg_rx,
         }
+    }
+}
+
+pub struct Scene {}
+
+impl Scene {
+    pub fn new() -> Scene {
+        Scene {}
     }
 }
