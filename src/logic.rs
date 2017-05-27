@@ -22,7 +22,7 @@ pub enum LogicMsg {
 
 impl fmt::Debug for LogicMsg {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Zean has come!")
+        write!(f, "New Scene")
     }
 }
 
@@ -131,11 +131,12 @@ impl System for LogicSystem {
             right: 2.0,
             bottom: -2.0,
             top: 2.0,
-            near: 0.0,
+            near: 0.1,
             far: 10.0,
             };
-        self.scene.camera = Camera::new(Point3::new(0.0, 0.0, 1.0), Point3::new(0.0, 0.0, 0.0), Vector3::new(0.0, 1.0, 0.0));
+        self.scene.camera = Camera::new(Point3::new(1.0, 1.0, 1.0), Point3::new(0.0, 0.0, 0.0), Vector3::new(0.0, 1.0, 0.0));
         self.scene.camera.set_projection_matrix(cgmath::Matrix4::from(perspective));
+        // println!("{:?}", cgmath::Matrix4::from(perspective));
         println!("Logic System Initilized.")
     }
     fn main_loop(&mut self) {

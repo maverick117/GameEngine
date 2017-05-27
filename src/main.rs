@@ -1,6 +1,6 @@
 #[macro_use]
 extern crate glium;
-// extern crate baal;
+extern crate baal;
 extern crate tobj;
 extern crate cgmath;
 
@@ -9,7 +9,7 @@ mod render;
 mod logic;
 mod input;
 mod model;
-// mod audio;
+mod audio;
 mod tool;
 
 use glium::glutin::Event;
@@ -26,7 +26,7 @@ use std::cell::UnsafeCell;
 use std::fmt;
 use std::ops::Deref;
 
-// use audio::*;
+use audio::*;
 use input::*;
 use model::*;
 use render::*;
@@ -109,17 +109,17 @@ fn main() {
                                         tmp_vec,
                                         render_rx)
                       });
-    // let tmp_vec = vec![input_tx.clone(),
-    //                    render_tx.clone(),
-    //                    model_tx.clone(),
-    //                    logic_tx.clone(),
-    //                    console_tx.clone()];
-    // let audio_handle =
-    //     thread::spawn(move || {
-    //                       spawn_systems(|msg_tx, msg_rx| AudioSystem::new(msg_tx, msg_rx),
-    //                                     tmp_vec,
-    //                                     audio_rx)
-    //                   });
+    let tmp_vec = vec![input_tx.clone(),
+                       render_tx.clone(),
+                       model_tx.clone(),
+                       logic_tx.clone(),
+                       console_tx.clone()];
+    let audio_handle =
+        thread::spawn(move || {
+                          spawn_systems(|msg_tx, msg_rx| AudioSystem::new(msg_tx, msg_rx),
+                                        tmp_vec,
+                                        audio_rx)
+                      });
     let tmp_vec = vec![input_tx.clone(),
                        render_tx.clone(),
                        model_tx.clone(),
@@ -153,14 +153,13 @@ fn main() {
                                         tmp_vec,
                                         logic_rx)
                       });
-    //let logic_handle = thread::spawn(move || spawn_systems(logic_system));
-    //let audio_handle = thread::spawn(move || spawn_systems(audio_system));
+    let audio_handle = thread::spawn(move || spawn_systems(audio_system));
 
     input_handle.join().unwrap();
     render_handle.join().unwrap();
     console_handle.join().unwrap();
     logic_handle.join().unwrap();
-    // audio_handle.join().unwrap();
+    audio_handle.join().unwrap();
     model_handle.join().unwrap();
 
 
