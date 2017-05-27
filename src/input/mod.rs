@@ -39,12 +39,7 @@ impl InputSystem {
 
 
 impl System for InputSystem {
-    fn init(&mut self) {
-        let init_msg = Msg { content: MsgContent::System(SystemMsg::SysInit) };
-        for tx in &self.msg_tx {
-            tx.send(init_msg.clone());
-        }
-    }
+    fn init(&mut self) {}
 
     fn main_loop(&mut self) {
         let mut should_run = true;
