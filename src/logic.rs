@@ -3,6 +3,8 @@
 use std::sync::mpsc::*;
 use std::sync::{Arc, Mutex};
 use glutin::Event;
+use tobj;
+use tobj::{Model, Material, Mesh};
 
 use super::System;
 use super::Msg;
