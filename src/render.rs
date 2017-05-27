@@ -26,7 +26,11 @@ pub struct RenderSystem {
 }
 
 impl System for RenderSystem {
-    fn init(&mut self) {}
+    fn init(&mut self) {
+        let mut target = self.window.draw();
+        target.clear_color_and_depth((0.2, 0.2, 0.2, 0.0), 1.0);
+        target.finish();
+    }
     fn main_loop(&mut self) {
         let mut should_run = true;
         while should_run {
@@ -38,6 +42,7 @@ impl System for RenderSystem {
                 self.msg_tx[0].send(event_msg).unwrap();
             }
             let mut msg_list: Vec<Msg> = Vec::new();
+            //msg_list.push(self.msg_rx.recv().unwrap());
             while let Ok(msg) = self.msg_rx.try_recv() {
                 msg_list.push(msg);
             }
@@ -76,7 +81,7 @@ impl RenderSystem {
         }
     }
     pub fn render(&mut self, scene: Scene) -> Msg {
-        let program = program!(&self.window, 
+        let program = program!(&self.window,
             330 => {
                 vertex: "
                     #version 330
@@ -159,14 +164,18 @@ impl RenderSystem {
                     depth: glium::Depth {
                         test: glium::DepthTest::IfLess,
                         write: true,
-                        .. Default::default()
+                        ..Default::default()
                     },
-                    .. Default::default()
+                    ..Default::default()
                 };
 
-                target.draw(&vertex_buffer,
-                    &glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList),
-                    &program, &uniforms, &params).unwrap();
+                target
+                    .draw(&vertex_buffer,
+                          &glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList),
+                          &program,
+                          &uniforms,
+                          &params)
+                    .unwrap();
                 unimplemented!()
             }
         }

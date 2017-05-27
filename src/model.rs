@@ -40,6 +40,7 @@ impl System for ModelSystem {
         let mut should_run = true;
         while should_run {
             let mut msg_list: Vec<Msg> = Vec::new();
+            msg_list.push(self.msg_rx.recv().unwrap());
             while let Ok(msg) = self.msg_rx.try_recv() {
                 msg_list.push(msg);
             }
