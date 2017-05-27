@@ -99,6 +99,9 @@ impl RenderSystem {
                 fragment: "
                     #version 330
                     // to implement
+                    void main() {
+                        gl_FragColor = vec4(0.4, 0.3, 0.05, 1.0)
+                    }
                 ",
             },
         ).unwrap();
@@ -151,10 +154,19 @@ impl RenderSystem {
                     view_matrix: scene.camera.get_view_matrix(),
                     model_matrix: object.get_model_matrix(),
                 };
+                // draw parameters
+                let params = glium::DrawParameters {
+                    depth: glium::Depth {
+                        test: glium::DepthTest::IfLess,
+                        write: true,
+                        .. Default::default()
+                    },
+                    .. Default::default()
+                };
 
-                // target.draw(&vertex_buffer,
-                //     &glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList),
-                //     &program, &uniforms, &params).unwrap();
+                target.draw(&vertex_buffer,
+                    &glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList),
+                    &program, &uniforms, &params).unwrap();
                 unimplemented!()
             }
         }
