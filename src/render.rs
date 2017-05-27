@@ -76,6 +76,36 @@ impl RenderSystem {
         }
     }
     pub fn render(&mut self, scene: Scene) -> Msg {
+        let program = program!(&self.window, 
+            330 => {
+                vertex: "
+                    #version 330
+                    uniform mat4 proj_matrix;
+                    uniform mat4 view_matrix;
+                    uniform mat4 model_matrix;
+
+                    in vec3 position;
+                    in vec3 normal;
+
+                    out vec3 v_position;
+                    out vec3 v_normal;
+
+                    void main() {
+                        v_position = position;
+                        v_normal = normal;
+                        gl_Position = proj_matrix * view_matrix * model_matrix * vec4(v_position, 1.0);
+                    }
+                ",
+                fragment: "
+                    #version 330
+                    // to implement
+                    void main() {
+                        gl_FragColor = vec4(0.4, 0.3, 0.05, 1.0)
+                    }
+                ",
+            },
+        ).unwrap();
+
         let mut target = self.window.draw();
         target.clear_color_and_depth((0.0, 0.0, 0.0, 0.0), 1.0);
         for object in scene.objects {
@@ -89,29 +119,6 @@ impl RenderSystem {
                 }
 
                 implement_vertex!(Vertex, position, normal, texture);
-
-                // let vertex_data : Vec<Vertex> = mesh.indices.iter().map(|i| {
-                //     let i = i as usize;
-                //     let normal:[f32; 3] = [1., 1., 1.];
-                //     let texture:[f32; 2] = [0., 0.];
-                //     let position = [mesh.positions[i * 3], mesh.positions[i * 3 + 1], mesh.positions[i * 3 + 2]];
-                //     if !mesh.normals.is_empty() {
-                //         // normal = [x, y, z]
-                //         normal = [mesh.normals[i * 3], mesh.normals[i * 3 + 1],
-                //                       mesh.normals[i * 3 + 2]];
-                //     }
-
-                //     if !mesh.texcoords.is_empty() {
-                //         // texcoord = [u, v];
-                //         texture = [mesh.texcoords[i * 2], mesh.texcoords[i * 2 + 1]];
-                //     }
-
-                //     Vertex {
-                //         position: position,
-                //         normal: normal,
-                //         texture: texture,
-                //     }
-                // }).collect::<Vertex>().to_vec();
 
                 let mut vertex_data = Vec::new();
                 for i in &mesh.indices {
@@ -139,13 +146,27 @@ impl RenderSystem {
                                          texture: texture,
                                      });
                 }
-
                 let vertex_buffer = glium::vertex::VertexBuffer::new(&self.window, &vertex_data)
                     .unwrap()
                     .into_vertex_buffer_any();
-                // target.draw(&vertex_buffer,
-                //     &glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList),
-                //     &program, &uniforms, &params).unwrap();
+                let uniforms = uniform! {
+                    proj_matrix: scene.camera.get_perspective_matrix(),
+                    view_matrix: scene.camera.get_view_matrix(),
+                    model_matrix: object.get_model_matrix(),
+                };
+                // draw parameters
+                let params = glium::DrawParameters {
+                    depth: glium::Depth {
+                        test: glium::DepthTest::IfLess,
+                        write: true,
+                        .. Default::default()
+                    },
+                    .. Default::default()
+                };
+
+                target.draw(&vertex_buffer,
+                    &glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList),
+                    &program, &uniforms, &params).unwrap();
                 unimplemented!()
             }
         }
