@@ -54,9 +54,13 @@ impl System for ModelSystem {
                 use Event::*;
                 use MsgContent::*;
                 use SystemMsg::*;
+                use logic::LogicMsg::*;
                 match msg.content {
                     System(SysHalt) => should_run = false,
-                    _ => {}
+                    Logic(ModelReq(s)) => {}
+                    _ => {
+                        unimplemented!();
+                    }
                 }
             }
         }

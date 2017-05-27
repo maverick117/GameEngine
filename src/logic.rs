@@ -16,9 +16,8 @@ use tool::*;
 
 #[derive(Clone)]
 pub enum LogicMsg {
-    //Scene(Box<amethyst_renderer::Scene<gfx_device_gl::Resources>>),
-    ModelReq(Box<String>),
-    SceneSnt(Scene),
+    ModelReq(String),
+    SceneSnd(Scene),
 }
 
 impl fmt::Debug for LogicMsg {

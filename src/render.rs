@@ -47,9 +47,10 @@ impl System for RenderSystem {
                 use MsgContent::*;
                 use SystemMsg::*;
                 let render_msg: Msg;
+                use logic::LogicMsg::*;
                 match msg.content {
                     System(SysHalt) => should_run = false,
-                    Logic(Scene(scene)) => render_msg = self.render(scene),
+                    Logic(SceneSnd(scene)) => render_msg = self.render(scene),
                     _ => {}
                 }
 
@@ -113,10 +114,10 @@ impl RenderSystem {
                 // }).collect::<Vertex>().to_vec();
 
                 let mut vertex_data = Vec::new();
-                for i in mesh.indices {
-                    let i = i as usize;
-                    let normal: [f32; 3] = [1., 1., 1.];
-                    let texture: [f32; 2] = [0., 0.];
+                for i in &mesh.indices {
+                    let i = *i as usize;
+                    let mut normal: [f32; 3] = [1., 1., 1.];
+                    let mut texture: [f32; 2] = [0., 0.];
                     let position = [mesh.positions[i * 3],
                                     mesh.positions[i * 3 + 1],
                                     mesh.positions[i * 3 + 2]];
@@ -148,6 +149,7 @@ impl RenderSystem {
                 unimplemented!()
             }
         }
+        unimplemented!()
     }
 }
 
