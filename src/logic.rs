@@ -61,10 +61,6 @@ impl Object {
             translate_matrix: Matrix4::from_translation(Vector3::new(0.0, 0.0, 0.0)),
             rotate_matrix: Matrix4::from_angle_x(Rad(0.0)),
             scale_matrix: Matrix4::from_scale(1.0),
-            model_transform_matrix: [[1.0, 0.0, 0.0, 0.0],
-                                     [0.0, 1.0, 0.0, 0.0],
-                                     [0.0, 0.0, 1.0, 0.0],
-                                     [0.0, 0.0, 0.0, 1.0]],
             path: path,
         }
     }
