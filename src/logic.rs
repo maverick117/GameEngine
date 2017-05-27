@@ -49,7 +49,7 @@ pub struct Object {
     translate_matrix: Matrix4<f32>,
     rotate_matrix: Matrix4<f32>,
     scale_matrix: Matrix4<f32>,
-    pub model_transform_matrix: [[f32; 4]; 4],
+    // model_transform_matrix: [[f32; 4]; 4],
     path: String,
 }
 
@@ -85,9 +85,10 @@ impl Object {
     fn scale(&mut self, ratio: f32) {
         self.scale_matrix = Matrix4::from_scale(ratio) * self.scale_matrix;
     }
-    fn flush(&mut self) {
+    fn get_model_matrix(&mut self) -> [[f32; 4]; 4] {
         let result = self.translate_matrix * self.scale_matrix * self.rotate_matrix;
-        self.model_transform_matrix = result.getArray();
+        // self.model_transform_matrix = result.getArray();
+        result.getArray()
     }
 }
 
