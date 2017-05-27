@@ -2,7 +2,7 @@
 
 use std::sync::mpsc::*;
 use std::sync::{Arc, Mutex};
-use glutin::WindowEvent;
+use glutin::Event;
 
 use super::System;
 use super::Msg;
@@ -20,11 +20,19 @@ impl fmt::Debug for LogicMsg {
     }
 }
 
-struct Object {}
+pub struct Object {
+    models: Vec<Model>,
+}
 
 impl Object {
-    fn new() -> Object {
-        Object {}
+    pub fn new(models: Vec<Model>) -> Object {
+        Object { models: models }
+    }
+
+    pub fn add_model(&mut self, models: Vec<Model>) {
+        for m in models {
+            self.models.push(m);
+        }
     }
 
     fn translate(&mut self, dx: f64, dy: f64, dz: f64) {}

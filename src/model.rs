@@ -2,3 +2,7 @@
 pub enum ModelMsg {
 
 }
+
+pub struct Model {}
+
+impl Model {}

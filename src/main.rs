@@ -4,9 +4,9 @@ extern crate baal;
 
 mod console;
 mod render;
-//mod logic;
+mod logic;
 mod input;
-//mod model;
+mod model;
 mod audio;
 
 use std::sync::mpsc;
@@ -24,7 +24,7 @@ use console::ConsoleSystem;
 use std::ops::Deref;
 use audio::*;
 use input::*;
-//use logic::LogicSystem;
+use logic::LogicSystem;
 use glium::glutin::Event;
 use glium::glutin;
 use glium::DisplayBuild;
@@ -82,25 +82,6 @@ fn main() {
     let (console_tx, console_rx) = mpsc::channel();
     let (audio_tx, audio_rx) = mpsc::channel();
     let (main_tx, main_rx) = mpsc::channel();
-
-    //let console_system = ConsoleSystem::new(Vec::new(), console_rx);
-
-    /*
-    let logic_system = LogicSystem::new(vec![render_tx.clone(),
-                                             model_tx.clone(),
-                                             console_tx.clone(),
-                                             audio_tx.clone()],
-                                        logic_rx);
-                                        */
-
-
-
-
-    //let audio_system = AudioSystem::new(vec![logic_tx.clone(), console_tx.clone()],
-    //audio_rx,
-    //audio_setting);
-
-
 
     let tmp_vec = vec![render_tx.clone(),
                        model_tx.clone(),
