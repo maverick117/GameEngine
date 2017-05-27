@@ -6,6 +6,7 @@ use std::sync::{Arc, Mutex};
 use super::System;
 use super::Msg;
 use super::*;
+use std::path::*;
 
 pub struct AudioSystem {
     msg_tx: Vec<Sender<Msg>>,
@@ -15,6 +16,15 @@ pub struct AudioSystem {
 
 impl System for AudioSystem {
     fn init(&mut self) {
+
+        let music_path = Path::new("assets/stream");
+        for entry in music_path.read_dir().expect("Read music path failed.") {
+            //println!("{:?}", entry);
+            if let Ok(entry) = entry {
+                println!("Music found {:?}", entry);
+                self.setting.musics.push(PathBuf::from(entry.file_name()));
+            }
+        }
         baal::init(&self.setting).unwrap();
         baal::music::play(0);
         baal::effect::set_listener([1., 1., 1.]);
@@ -37,7 +47,10 @@ impl System for AudioSystem {
                     MsgContent::System(SystemMsg::SysHalt) => {
                         should_run = false;
                     }
-                    c => {}
+                    MsgContent::System(SystemMsg::SysInit) => {}
+                    c => {
+                        unimplemented!();
+                    }
                 }
             }
         }
@@ -63,7 +76,7 @@ impl AudioSystem {
                 music_transition: baal::music::MusicTransition::Instant,
                 short_effects: vec!["wowa-intro.ogg".into()],
                 persistent_effects: vec!["wowa-intro.ogg".into()],
-                musics: vec!["to_be_free.ogg".into()],
+                musics: vec![],
             },
         }
     }
