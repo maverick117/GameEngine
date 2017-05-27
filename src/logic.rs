@@ -50,7 +50,7 @@ pub struct Object {
     rotate_matrix: Matrix4<f32>,
     scale_matrix: Matrix4<f32>,
     // model_transform_matrix: [[f32; 4]; 4],
-    path: String,
+    pub path: String,
 }
 
 impl Object {
