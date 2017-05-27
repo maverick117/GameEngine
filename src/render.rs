@@ -12,6 +12,7 @@ use glium::glutin::Event;
 use cgmath;
 use logic::*;
 use tool::*;
+use glium::Surface;
 
 #[derive(Clone,Debug)]
 pub enum RenderMsg {
@@ -45,10 +46,14 @@ impl System for RenderSystem {
                 use Event::*;
                 use MsgContent::*;
                 use SystemMsg::*;
+                let render_msg: Msg;
                 match msg.content {
                     System(SysHalt) => should_run = false,
+                    Logic(Scene(scene)) => render_msg = self.render(scene),
                     _ => {}
                 }
+
+
             }
         }
         println!("Render exited");
@@ -67,6 +72,76 @@ impl RenderSystem {
                 .unwrap(),
             msg_tx: msg_tx,
             msg_rx: msg_rx,
+        }
+    }
+    pub fn render(&mut self, scene: Scene) -> Msg {
+        let mut target = self.window.draw();
+        target.clear_color_and_depth((0.0, 0.0, 0.0, 0.0), 1.0);
+        for object in scene.objects {
+            for model in object.models {
+                let mesh = &model.mesh;
+                #[derive(Copy, Clone)]
+                struct Vertex {
+                    position: [f32; 3],
+                    normal: [f32; 3], 
+                    texture: [f32; 2],
+                }
+
+                implement_vertex!(Vertex,position,normal,texture);
+
+                // let vertex_data : Vec<Vertex> = mesh.indices.iter().map(|i| {
+                //     let i = i as usize;
+                //     let normal:[f32; 3] = [1., 1., 1.];
+                //     let texture:[f32; 2] = [0., 0.];
+                //     let position = [mesh.positions[i * 3], mesh.positions[i * 3 + 1], mesh.positions[i * 3 + 2]];
+                //     if !mesh.normals.is_empty() {
+                //         // normal = [x, y, z]
+                //         normal = [mesh.normals[i * 3], mesh.normals[i * 3 + 1],
+                //                       mesh.normals[i * 3 + 2]];
+                //     }
+
+                //     if !mesh.texcoords.is_empty() {
+                //         // texcoord = [u, v];
+                //         texture = [mesh.texcoords[i * 2], mesh.texcoords[i * 2 + 1]];
+                //     }
+                    
+                //     Vertex {
+                //         position: position,
+                //         normal: normal,
+                //         texture: texture,
+                //     }
+                // }).collect::<Vertex>().to_vec();
+
+                let mut vertex_data = Vec::new();
+                for i in mesh.indices {
+                    let i = i as usize;
+                    let normal:[f32; 3] = [1., 1., 1.];
+                    let texture:[f32; 2] = [0., 0.];
+                    let position = [mesh.positions[i * 3], mesh.positions[i * 3 + 1], mesh.positions[i * 3 + 2]];
+                    if !mesh.normals.is_empty() {
+                        // normal = [x, y, z]
+                        normal = [mesh.normals[i * 3], mesh.normals[i * 3 + 1],
+                                      mesh.normals[i * 3 + 2]];
+                    }
+
+                    if !mesh.texcoords.is_empty() {
+                        // texcoord = [u, v];
+                        texture = [mesh.texcoords[i * 2], mesh.texcoords[i * 2 + 1]];
+                    }
+                    
+                    vertex_data.push(Vertex {
+                        position: position,
+                        normal: normal,
+                        texture: texture,
+                    });
+                }
+
+                let vertex_buffer = glium::vertex::VertexBuffer::new(&self.window, &vertex_data).unwrap().into_vertex_buffer_any();
+                // target.draw(&vertex_buffer,
+                //     &glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList),
+                //     &program, &uniforms, &params).unwrap();
+                unimplemented!()
+            }
         }
     }
 }
