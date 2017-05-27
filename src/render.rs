@@ -9,6 +9,7 @@ use std::sync::Mutex;
 use glium::backend::glutin_backend::GlutinFacade;
 use glium::DisplayBuild;
 use glium::glutin::Event;
+use cgmath;
 use logic::*;
 
 #[derive(Clone,Debug)]
@@ -73,11 +74,14 @@ impl RenderSystem {
 pub struct Scene {
     objects: Vec<Object>,
     lights: Vec<Light>,
+    camera: cgmath::Vector3<f32>,
 }
 
 impl Scene {
     pub fn new(objects: Vec<Object>, lights: Vec<Light>) -> Scene {
         Scene { objects: objects,
-                lights: lights, }
+                lights: lights,
+                camera: cgmath::Vector3::new(0.0, 0.0, 0.0),
+            }
     }
 }

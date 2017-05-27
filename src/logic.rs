@@ -10,8 +10,9 @@ use super::System;
 use super::Msg;
 use super::*;
 use model::*;
-use cgmath;
+use cgmath::*;
 use render::*;
+
 
 #[derive(Clone)]
 pub enum LogicMsg {
@@ -38,11 +39,23 @@ pub struct Light {
 #[derive(Clone, Debug)]
 pub struct Object {
     models: Vec<Model>,
+    materials: Vec<Material>,
+    translate_matrix: Matrix4<f32>,
+    rotate_matrix: Matrix4<f32>,
+    scale_matrix: Matrix4<f32>,
+    path: String,
 }
 
 impl Object {
-    pub fn new(models: Vec<Model>) -> Object {
-        Object { models: models }
+    pub fn new(models: Vec<Model>, materials: Vec<Material>, path: String) -> Object {
+        Object {
+            models: models,
+            materials: materials,
+            translate_matrix: Matrix4::identity(),
+            rotate_matrix: Matrix4::identity(),
+            scale_matrix: Matrix4::identity(),
+            path: path,
+        }
     }
 
     pub fn add_model(&mut self, models: Vec<Model>) {
