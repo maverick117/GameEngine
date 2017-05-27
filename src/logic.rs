@@ -156,6 +156,11 @@ impl System for LogicSystem {
                 match m.content {
                     MsgContent::System(SystemMsg::SysHalt) => {
                         should_run = false;
+                    },
+                    MsgContent::Render(RenderMsg::RenderResult(r)) => {
+                        if !r.is_some() {
+                            println!("Recv msg from Renderer: Fail to render...");
+                        }
                     }
                     c => {}
                 }

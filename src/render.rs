@@ -17,6 +17,7 @@ use glium::Surface;
 #[derive(Clone,Debug)]
 pub enum RenderMsg {
     InputQueue(Vec<Event>),
+    RenderResult(Option<()>),
 }
 
 pub struct RenderSystem {
@@ -55,7 +56,11 @@ impl System for RenderSystem {
                 use logic::LogicMsg::*;
                 match msg.content {
                     System(SysHalt) => should_run = false,
-                    Logic(SceneSnd(scene)) => render_msg = self.render(scene),
+                    Logic(SceneSnd(scene)) => {
+                        let result = self.render(scene);
+                        let render_msg = Msg { content: Render(RenderMsg::RenderResult(result)) };
+                        self.msg_tx[2].send(render_msg);
+                    },
                     _ => {}
                 }
 
@@ -80,7 +85,7 @@ impl RenderSystem {
             msg_rx: msg_rx,
         }
     }
-    pub fn render(&mut self, scene: Scene) -> Msg {
+    pub fn render(&mut self, scene: Scene) -> Option<()> {
         let program = program!(&self.window,
             330 => {
                 vertex: "
@@ -111,8 +116,7 @@ impl RenderSystem {
             },
         ).unwrap();
 
-        let mut target = self.window.draw();
-        target.clear_color_and_depth((0.0, 0.0, 0.0, 0.0), 1.0);
+
         for object in scene.objects {
             for model in &object.models {
                 let mesh = &model.mesh;
@@ -168,7 +172,9 @@ impl RenderSystem {
                     },
                     ..Default::default()
                 };
-
+                
+                let mut target = self.window.draw();
+                target.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
                 target
                     .draw(&vertex_buffer,
                           &glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList),
@@ -176,10 +182,10 @@ impl RenderSystem {
                           &uniforms,
                           &params)
                     .unwrap();
-                unimplemented!()
+                target.finish().unwrap();
             }
         }
-        unimplemented!()
+        Some(()) // TODO: None
     }
 }
 
