@@ -42,6 +42,7 @@ impl System for RenderSystem {
                 self.msg_tx[0].send(event_msg).unwrap();
             }
             let mut msg_list: Vec<Msg> = Vec::new();
+            //msg_list.push(self.msg_rx.recv().unwrap());
             while let Ok(msg) = self.msg_rx.try_recv() {
                 msg_list.push(msg);
             }

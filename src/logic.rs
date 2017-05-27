@@ -103,6 +103,7 @@ impl System for LogicSystem {
         let mut should_run = true;
         while should_run {
             let mut cmd_queue = Vec::new();
+            cmd_queue.push(self.msg_rx.recv().unwrap());
             while let Ok(msg) = self.msg_rx.try_recv() {
                 cmd_queue.push(msg);
             }
