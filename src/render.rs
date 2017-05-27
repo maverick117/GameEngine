@@ -158,6 +158,7 @@ pub struct Camera {
     eye: cgmath::Point3<f32>,
     center: cgmath::Point3<f32>,
     up: cgmath::Vector3<f32>,
+    projection_matrix: [[f32; 4]; 4],
 }
 
 impl Camera {
@@ -165,17 +166,20 @@ impl Camera {
                center: cgmath::Point3<f32>,
                up: cgmath::Vector3<f32>)
                -> Camera {
+
+        let m = cgmath::Matrix4::from_translation(cgmath::Vector3::new(0.0, 0.0, 0.0));
         Camera {
             eye: eye,
             center: center,
             up: up,
+            projection_matrix: m.getArray(),
         }
     }
     pub fn get_view_matrix(&self) -> [[f32; 4]; 4] {
         cgmath::Matrix4::look_at(self.eye, self.center, self.up).getArray()
     }
-    pub fn get_perspective_matrix(&self, perspective: cgmath::Perspective<f32>) -> [[f32; 4]; 4] {
-        cgmath::Matrix4::from(perspective).getArray()
+    pub fn get_projection_matrix(&self) -> [[f32; 4]; 4] {
+        self.projection_matrix
     }
 }
 
