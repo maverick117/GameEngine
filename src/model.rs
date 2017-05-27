@@ -51,7 +51,18 @@ impl System for ModelSystem {
                 use logic::LogicMsg::*;
                 match msg.content {
                     System(SysHalt) => should_run = false,
-                    Logic(ModelReq(s)) => {}
+                    Logic(ModelReq(s)) => {
+                        let mut return_value = Option::None;
+                        for object in &self.objects {
+                            if object.path == s {
+                                return_value = Some(object.clone());
+                                break;
+                            }
+                        }
+                        let model_msg =
+                            Msg { content: Model(ModelMsg::ObjectResult(return_value)) };
+                        self.msg_tx[3].send(model_msg);
+                    }
                     _ => {
                         unimplemented!();
                     }
