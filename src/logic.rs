@@ -109,11 +109,12 @@ impl System for LogicSystem {
                 speculer: cgmath::Vector3::new(1.0, 1.0, 1.0),
         };
         let mut static_object_path: Vec<String> = Vec::new();
-        static_object_path.push("./assets/cube.obj".to_string());
+        static_object_path.push("assets/model/cube.obj".to_string());
 
         for path in static_object_path {
             let msg = Msg { content: Logic(LogicMsg::ModelReq(path.clone()))};
-            self.msg_tx[2].send(msg);
+            self.msg_tx[3].send(msg);
+            println!("TRY TO RECV MSG...");
             if let Ok(msg) = self.msg_rx.recv() {
                 match msg.content {
                     Model(ObjectResult(Some(obj))) => {
@@ -123,6 +124,7 @@ impl System for LogicSystem {
                     _ => unimplemented!(),
                 }
             }
+            println!("TRY TO RECV MSG... [FIN]");
         }
         let perspective = cgmath::Perspective{
             left: -2.0,
@@ -134,7 +136,7 @@ impl System for LogicSystem {
             };
         self.scene.camera = Camera::new(Point3::new(0.0, 0.0, 1.0), Point3::new(0.0, 0.0, 0.0), Vector3::new(0.0, 1.0, 0.0));
         self.scene.camera.set_projection_matrix(cgmath::Matrix4::from(perspective));
-        
+        println!("Logic System Initilized.")
     }
     fn main_loop(&mut self) {
         use MsgContent::*;
@@ -161,6 +163,7 @@ impl System for LogicSystem {
             // Pass to renderer
             let msg = Msg { content: Logic(LogicMsg::SceneSnd(self.scene.clone()))};
             self.msg_tx[1].send(msg);
+            println!("Logic Msg Sent!!!");
         }
     }
 }
