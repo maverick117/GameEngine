@@ -76,6 +76,33 @@ impl RenderSystem {
         }
     }
     pub fn render(&mut self, scene: Scene) -> Msg {
+        let program = program!(&self.window, 
+            330 => {
+                vertex: "
+                    #version 330
+                    uniform mat4 proj_matrix;
+                    uniform mat4 view_matrix;
+                    uniform mat4 model_matrix;
+
+                    in vec3 position;
+                    in vec3 normal;
+
+                    out vec3 v_position;
+                    out vec3 v_normal;
+
+                    void main() {
+                        v_position = position;
+                        v_normal = normal;
+                        gl_Position = proj_matrix * view_matrix * model_matrix * vec4(v_position, 1.0);
+                    }
+                ",
+                fragment: "
+                    #version 330
+                    // to implement
+                ",
+            },
+        ).unwrap();
+
         let mut target = self.window.draw();
         target.clear_color_and_depth((0.0, 0.0, 0.0, 0.0), 1.0);
         for object in scene.objects {
@@ -120,10 +147,10 @@ impl RenderSystem {
                     .unwrap()
                     .into_vertex_buffer_any();
                 let uniforms = uniform! {
-                    proj_matrix: scene.camera.get_perspective(),
+                    proj_matrix: scene.camera.get_perspective_matrix(),
                     view_matrix: scene.camera.get_view_matrix(),
                     model_matrix: object.get_model_matrix(),
-                }
+                };
 
                 // target.draw(&vertex_buffer,
                 //     &glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList),
