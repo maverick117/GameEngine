@@ -9,7 +9,7 @@ use std::sync::Mutex;
 use glium::backend::glutin_backend::GlutinFacade;
 use glium::DisplayBuild;
 use glium::glutin::Event;
-use logic::Object;
+use logic::*;
 
 #[derive(Clone,Debug)]
 pub enum RenderMsg {
@@ -69,13 +69,15 @@ impl RenderSystem {
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct Scene {
     objects: Vec<Object>,
     lights: Vec<Light>,
 }
 
 impl Scene {
-    pub fn new(objects: Vec<Object>) -> Scene {
-        Scene { objects: objects }
+    pub fn new(objects: Vec<Object>, lights: Vec<Light>) -> Scene {
+        Scene { objects: objects,
+                lights: lights, }
     }
 }

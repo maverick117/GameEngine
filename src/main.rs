@@ -2,13 +2,14 @@
 extern crate glium;
 extern crate baal;
 extern crate tobj;
+extern crate cgmath;
 
 mod console;
 mod render;
 mod logic;
 mod input;
 mod model;
-// mod audio;
+mod audio;
 
 use std::sync::mpsc;
 use std::sync::mpsc::*;
@@ -23,7 +24,7 @@ use render::*;
 use console::ConsoleSystem;
 
 use std::ops::Deref;
-// use audio::*;
+use audio::*;
 use input::*;
 use model::*;
 use logic::LogicSystem;

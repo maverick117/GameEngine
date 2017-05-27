@@ -26,6 +26,7 @@ impl fmt::Debug for LogicMsg {
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct Light {
     position: cgmath::Point3<f32>,
     ambient: cgmath::Vector3<f32>,
@@ -34,6 +35,7 @@ pub struct Light {
 
 }
 
+#[derive(Clone, Debug)]
 pub struct Object {
     models: Vec<Model>,
 }
