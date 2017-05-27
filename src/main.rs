@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate glium;
 extern crate baal;
+extern crate tobj;
 
 mod console;
 mod render;
