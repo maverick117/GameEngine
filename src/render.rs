@@ -71,6 +71,7 @@ impl RenderSystem {
 
 pub struct Scene {
     objects: Vec<Object>,
+    lights: Vec<Light>,
 }
 
 impl Scene {

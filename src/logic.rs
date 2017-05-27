@@ -10,6 +10,8 @@ use super::System;
 use super::Msg;
 use super::*;
 use model::*;
+use cgmath;
+
 #[derive(Clone)]
 pub enum LogicMsg {
     //Scene(Box<amethyst_renderer::Scene<gfx_device_gl::Resources>>),
@@ -20,6 +22,14 @@ impl fmt::Debug for LogicMsg {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Zean has come!")
     }
+}
+
+pub struct Light {
+    position: cgmath::Point3<f32>,
+    ambient: cgmath::Vector3<f32>,
+    diffuse: cgmath::Vector3<f32>,
+    speculer: cgmath::Vector3<f32>,
+
 }
 
 pub struct Object {
