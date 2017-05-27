@@ -109,7 +109,7 @@ impl RenderSystem {
         let mut target = self.window.draw();
         target.clear_color_and_depth((0.0, 0.0, 0.0, 0.0), 1.0);
         for object in scene.objects {
-            for model in object.models {
+            for model in &object.models {
                 let mesh = &model.mesh;
                 #[derive(Copy, Clone)]
                 struct Vertex {
@@ -150,7 +150,7 @@ impl RenderSystem {
                     .unwrap()
                     .into_vertex_buffer_any();
                 let uniforms = uniform! {
-                    proj_matrix: scene.camera.get_perspective_matrix(),
+                    proj_matrix: scene.camera.get_projection_matrix(),
                     view_matrix: scene.camera.get_view_matrix(),
                     model_matrix: object.get_model_matrix(),
                 };
