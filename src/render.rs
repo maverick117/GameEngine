@@ -158,6 +158,10 @@ impl RenderSystem {
                 let vertex_buffer = glium::vertex::VertexBuffer::new(&self.window, &vertex_data)
                     .unwrap()
                     .into_vertex_buffer_any();
+                println!("{:?}", scene.camera.get_projection_matrix());
+                println!("{:?}", scene.camera.get_view_matrix());
+                println!("{:?}", object.get_model_matrix());
+                
                 let uniforms = uniform! {
                     proj_matrix: scene.camera.get_projection_matrix(),
                     view_matrix: scene.camera.get_view_matrix(),
