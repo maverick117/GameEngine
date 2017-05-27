@@ -18,7 +18,7 @@ use render::*;
 pub enum LogicMsg {
     //Scene(Box<amethyst_renderer::Scene<gfx_device_gl::Resources>>),
     ModelReq(Box<String>),
-    SceneSnt(Scene),
+    SceneSnd(Scene),
 }
 
 impl fmt::Debug for LogicMsg {
@@ -38,12 +38,12 @@ pub struct Light {
 
 #[derive(Clone, Debug)]
 pub struct Object {
-    models: Vec<Model>,
-    materials: Vec<Material>,
-    translate_matrix: Matrix4<f32>,
-    rotate_matrix: Matrix4<f32>,
-    scale_matrix: Matrix4<f32>,
-    path: String,
+    pub models: Vec<Model>,
+    pub materials: Vec<Material>,
+    pub translate_matrix: Matrix4<f32>,
+    pub rotate_matrix: Matrix4<f32>,
+    pub scale_matrix: Matrix4<f32>,
+    pub path: String,
 }
 
 impl Object {

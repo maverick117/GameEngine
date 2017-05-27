@@ -48,7 +48,7 @@ impl System for RenderSystem {
                 let render_msg: Msg;
                 match msg.content {
                     System(SysHalt) => should_run = false,
-                    Logic(Scene(scene)) => render_msg = self.render(scene),
+                    Logic(SceneSnd(scene)) => render_msg = self.render(scene),
                     _ => {}
                 }
 
@@ -88,29 +88,6 @@ impl RenderSystem {
 
                 implement_vertex!(Vertex,position,normal,texture);
 
-                // let vertex_data : Vec<Vertex> = mesh.indices.iter().map(|i| {
-                //     let i = i as usize;
-                //     let normal:[f32; 3] = [1., 1., 1.];
-                //     let texture:[f32; 2] = [0., 0.];
-                //     let position = [mesh.positions[i * 3], mesh.positions[i * 3 + 1], mesh.positions[i * 3 + 2]];
-                //     if !mesh.normals.is_empty() {
-                //         // normal = [x, y, z]
-                //         normal = [mesh.normals[i * 3], mesh.normals[i * 3 + 1],
-                //                       mesh.normals[i * 3 + 2]];
-                //     }
-
-                //     if !mesh.texcoords.is_empty() {
-                //         // texcoord = [u, v];
-                //         texture = [mesh.texcoords[i * 2], mesh.texcoords[i * 2 + 1]];
-                //     }
-                    
-                //     Vertex {
-                //         position: position,
-                //         normal: normal,
-                //         texture: texture,
-                //     }
-                // }).collect::<Vertex>().to_vec();
-
                 let mut vertex_data = Vec::new();
                 for i in mesh.indices {
                     let i = i as usize;
@@ -136,6 +113,11 @@ impl RenderSystem {
                 }
 
                 let vertex_buffer = glium::vertex::VertexBuffer::new(&self.window, &vertex_data).unwrap().into_vertex_buffer_any();
+                let uniforms = uniform! {
+                    proj_matrix: scene.camera.get_perspective(),
+                    view_matrix: scene.camera.get_view_matrix(),
+                    model_matrix: object.get_model_matrix(),
+                }
                 // target.draw(&vertex_buffer,
                 //     &glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList),
                 //     &program, &uniforms, &params).unwrap();
