@@ -138,13 +138,24 @@ fn main() {
                                         tmp_vec,
                                         audio_rx)
                       });
-    //let console_handle = thread::spawn(move || spawn_systems(console_system));
+    let tmp_vec = vec![input_tx.clone(),
+                       render_tx.clone(),
+                       model_tx.clone(),
+                       logic_tx.clone(),
+                       audio_tx.clone(),
+                       main_tx.clone()];
+    let console_handle =
+        thread::spawn(move || {
+                          spawn_systems(|msg_tx, msg_rx| ConsoleSystem::new(msg_tx, msg_rx),
+                                        tmp_vec,
+                                        console_rx)
+                      });
     //let logic_handle = thread::spawn(move || spawn_systems(logic_system));
     //let audio_handle = thread::spawn(move || spawn_systems(audio_system));
 
     input_handle.join().unwrap();
     render_handle.join().unwrap();
-    //console_handle.join().unwrap();
+    console_handle.join().unwrap();
     //logic_handle.join().unwrap();
     audio_handle.join().unwrap();
 
