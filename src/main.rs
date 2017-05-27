@@ -10,6 +10,7 @@ mod logic;
 mod input;
 mod model;
 mod audio;
+mod tool;
 
 use std::sync::mpsc;
 use std::sync::mpsc::*;

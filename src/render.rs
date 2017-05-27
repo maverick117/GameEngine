@@ -83,11 +83,11 @@ impl RenderSystem {
                 #[derive(Copy, Clone)]
                 struct Vertex {
                     position: [f32; 3],
-                    normal: [f32; 3], 
+                    normal: [f32; 3],
                     texture: [f32; 2],
                 }
 
-                implement_vertex!(Vertex,position,normal,texture);
+                implement_vertex!(Vertex, position, normal, texture);
 
                 // let vertex_data : Vec<Vertex> = mesh.indices.iter().map(|i| {
                 //     let i = i as usize;
@@ -104,7 +104,7 @@ impl RenderSystem {
                 //         // texcoord = [u, v];
                 //         texture = [mesh.texcoords[i * 2], mesh.texcoords[i * 2 + 1]];
                 //     }
-                    
+
                 //     Vertex {
                 //         position: position,
                 //         normal: normal,
@@ -115,28 +115,33 @@ impl RenderSystem {
                 let mut vertex_data = Vec::new();
                 for i in mesh.indices {
                     let i = i as usize;
-                    let normal:[f32; 3] = [1., 1., 1.];
-                    let texture:[f32; 2] = [0., 0.];
-                    let position = [mesh.positions[i * 3], mesh.positions[i * 3 + 1], mesh.positions[i * 3 + 2]];
+                    let normal: [f32; 3] = [1., 1., 1.];
+                    let texture: [f32; 2] = [0., 0.];
+                    let position = [mesh.positions[i * 3],
+                                    mesh.positions[i * 3 + 1],
+                                    mesh.positions[i * 3 + 2]];
                     if !mesh.normals.is_empty() {
                         // normal = [x, y, z]
-                        normal = [mesh.normals[i * 3], mesh.normals[i * 3 + 1],
-                                      mesh.normals[i * 3 + 2]];
+                        normal = [mesh.normals[i * 3],
+                                  mesh.normals[i * 3 + 1],
+                                  mesh.normals[i * 3 + 2]];
                     }
 
                     if !mesh.texcoords.is_empty() {
                         // texcoord = [u, v];
                         texture = [mesh.texcoords[i * 2], mesh.texcoords[i * 2 + 1]];
                     }
-                    
+
                     vertex_data.push(Vertex {
-                        position: position,
-                        normal: normal,
-                        texture: texture,
-                    });
+                                         position: position,
+                                         normal: normal,
+                                         texture: texture,
+                                     });
                 }
 
-                let vertex_buffer = glium::vertex::VertexBuffer::new(&self.window, &vertex_data).unwrap().into_vertex_buffer_any();
+                let vertex_buffer = glium::vertex::VertexBuffer::new(&self.window, &vertex_data)
+                    .unwrap()
+                    .into_vertex_buffer_any();
                 // target.draw(&vertex_buffer,
                 //     &glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList),
                 //     &program, &uniforms, &params).unwrap();
@@ -154,7 +159,10 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(eye: cgmath::Point3<f32>, center: cgmath::Point3<f32>, up: cgmath::Vector3<f32>) -> Camera {
+    pub fn new(eye: cgmath::Point3<f32>,
+               center: cgmath::Point3<f32>,
+               up: cgmath::Vector3<f32>)
+               -> Camera {
         Camera {
             eye: eye,
             center: center,
@@ -179,9 +187,10 @@ pub struct Scene {
 
 impl Scene {
     pub fn new(objects: Vec<Object>, lights: Vec<Light>, camera: Camera) -> Scene {
-        Scene { objects: objects,
-                lights: lights,
-                camera: camera,
-            }
+        Scene {
+            objects: objects,
+            lights: lights,
+            camera: camera,
+        }
     }
 }

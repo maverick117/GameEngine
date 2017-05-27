@@ -4,15 +4,13 @@ use std::path::{Path, PathBuf};
 use std::sync::mpsc::*;
 use glium::vertex::VertexBufferAny;
 use glium::glutin::Event;
+use logic::Object;
 use System;
 use Msg;
 
 #[derive(Clone,Debug)]
 pub enum ModelMsg {
-    ModelAck(bool),
-    ModelResult(Option<tobj::Model>),
-    MaterialAck(bool),
-    MaterialResult(Option<tobj::Material>),
+    ObjectResult(Option<Object>),
 }
 
 pub struct ModelSystem {

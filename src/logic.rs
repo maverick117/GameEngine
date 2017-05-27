@@ -33,7 +33,6 @@ pub struct Light {
     ambient: cgmath::Vector3<f32>,
     diffuse: cgmath::Vector3<f32>,
     speculer: cgmath::Vector3<f32>,
-
 }
 
 #[derive(Debug)]
@@ -63,17 +62,17 @@ impl Object {
             translate_matrix: Matrix4::from_translation(Vector3::new(0.0, 0.0, 0.0)),
             rotate_matrix: Matrix4::from_angle_x(Rad(0.0)),
             scale_matrix: Matrix4::from_scale(1.0),
-            model_transform_matrix:
-                                [[1.0, 0.0, 0.0, 0.0],
-                                 [0.0, 1.0, 0.0, 0.0],
-                                 [0.0, 0.0, 1.0, 0.0],
-                                 [0.0, 0.0, 0.0, 1.0]],
+            model_transform_matrix: [[1.0, 0.0, 0.0, 0.0],
+                                     [0.0, 1.0, 0.0, 0.0],
+                                     [0.0, 0.0, 1.0, 0.0],
+                                     [0.0, 0.0, 0.0, 1.0]],
             path: path,
         }
     }
 
     fn translate(&mut self, dx: f32, dy: f32, dz: f32) {
-        self.translate_matrix = Matrix4::from_translation(Vector3::new(dx, dy, dz)) * self.translate_matrix;
+        self.translate_matrix = Matrix4::from_translation(Vector3::new(dx, dy, dz)) *
+                                self.translate_matrix;
     }
     fn rotate(&mut self, axis: Axis, angle: f32) {
         let rot = match axis {
