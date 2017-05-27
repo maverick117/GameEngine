@@ -71,17 +71,31 @@ impl RenderSystem {
 }
 
 #[derive(Clone, Debug)]
+pub struct Camera {
+    eye: cgmath::Point3<f32>,
+    center: cgmath::Point3<f32>,
+    up: cgmath::Vector3<f32>,
+}
+
+impl Camera {
+    pub fn new(eye: cgmath::Point3<f32>, center: cgmath::Point3<f32>, up: cgmath::Vector3<f32>) -> cgmath::Matrix4<f32> {
+        cgmath::Matrix4::look_at(eye, center, up)
+    }
+}
+
+
+#[derive(Clone, Debug)]
 pub struct Scene {
     objects: Vec<Object>,
     lights: Vec<Light>,
-    camera: cgmath::Vector3<f32>,
+    camera: Camera,
 }
 
 impl Scene {
-    pub fn new(objects: Vec<Object>, lights: Vec<Light>) -> Scene {
+    pub fn new(objects: Vec<Object>, lights: Vec<Light>, camera: Camera) -> Scene {
         Scene { objects: objects,
                 lights: lights,
-                camera: cgmath::Vector3::new(0.0, 0.0, 0.0),
+                camera: camera,
             }
     }
 }
