@@ -202,14 +202,18 @@ impl Camera {
     pub fn get_projection_matrix(&self) -> [[f32; 4]; 4] {
         self.projection_matrix
     }
+
+    pub fn set_projection_matrix(&mut self, m: cgmath::Matrix4<f32>) {
+        self.projection_matrix = m.getArray();
+    }
 }
 
 
 #[derive(Clone, Debug)]
 pub struct Scene {
-    objects: Vec<Object>,
-    lights: Vec<Light>,
-    camera: Camera,
+    pub objects: Vec<Object>,
+    pub lights: Vec<Light>,
+    pub camera: Camera,
 }
 
 impl Scene {

@@ -95,11 +95,49 @@ pub struct LogicSystem {
     mouse_y: i32,
     object_list: Vec<Object>,
     selected_object_index: usize,
+    scene: Scene,
 }
 
 impl System for LogicSystem {
-    fn init(&mut self) {}
+    fn init(&mut self) {
+        use MsgContent::*;
+        use model::ModelMsg::*;
+        let light = Light {
+                position: cgmath::Point3::new(0.0, 1.0, 0.0),
+                ambient: cgmath::Vector3::new(1.0, 1.0, 1.0),
+                diffuse: cgmath::Vector3::new(1.0, 1.0, 1.0),
+                speculer: cgmath::Vector3::new(1.0, 1.0, 1.0),
+        };
+        let mut static_object_path: Vec<String> = Vec::new();
+        static_object_path.push("./assets/cube.obj".to_string());
+
+        for path in static_object_path {
+            let msg = Msg { content: Logic(LogicMsg::ModelReq(path.clone()))};
+            self.msg_tx[2].send(msg);
+            if let Ok(msg) = self.msg_rx.recv() {
+                match msg.content {
+                    Model(ObjectResult(Some(obj))) => {
+                        self.scene.objects.push(obj);
+                    },
+                    Model(ObjectResult(None)) => unimplemented!(),
+                    _ => unimplemented!(),
+                }
+            }
+        }
+        let perspective = cgmath::Perspective{
+            left: -2.0,
+            right: 2.0,
+            bottom: -2.0,
+            top: 2.0,
+            near: 0.0,
+            far: 10.0,
+            };
+        self.scene.camera = Camera::new(Point3::new(0.0, 0.0, 1.0), Point3::new(0.0, 0.0, 0.0), Vector3::new(0.0, 1.0, 0.0));
+        self.scene.camera.set_projection_matrix(cgmath::Matrix4::from(perspective));
+        
+    }
     fn main_loop(&mut self) {
+        use MsgContent::*;
         let mut should_run = true;
         while should_run {
             let mut cmd_queue = Vec::new();
@@ -119,12 +157,9 @@ impl System for LogicSystem {
                     c => {}
                 }
             }
-
-            // For all objects, continue on their trajectories
-
-            // Generate fragments
-
             // Pass to renderer
+            let msg = Msg { content: Logic(LogicMsg::SceneSnd(self.scene.clone()))};
+            self.msg_tx[1].send(msg);
         }
     }
 }
@@ -138,6 +173,7 @@ impl LogicSystem {
             mouse_y: 0,
             object_list: Vec::new(),
             selected_object_index: 0,
+            scene: Scene::new(Vec::new(), Vec::new(), Camera::new(Point3::new(0.0, 0.0, 1.0), Point3::new(0.0, 0.0, 0.0), Vector3::new(0.0, 1.0, 0.0))),
         }
     }
 
