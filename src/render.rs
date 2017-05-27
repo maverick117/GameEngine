@@ -11,6 +11,7 @@ use glium::DisplayBuild;
 use glium::glutin::Event;
 use cgmath;
 use logic::*;
+use tool::*;
 
 #[derive(Clone,Debug)]
 pub enum RenderMsg {
@@ -78,8 +79,18 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(eye: cgmath::Point3<f32>, center: cgmath::Point3<f32>, up: cgmath::Vector3<f32>) -> cgmath::Matrix4<f32> {
-        cgmath::Matrix4::look_at(eye, center, up)
+    pub fn new(eye: cgmath::Point3<f32>, center: cgmath::Point3<f32>, up: cgmath::Vector3<f32>) -> Camera {
+        Camera {
+            eye: eye,
+            center: center,
+            up: up,
+        }
+    }
+    pub fn get_view_matrix(&self) -> [[f32; 4]; 4] {
+        cgmath::Matrix4::look_at(self.eye, self.center, self.up).getArray()
+    }
+    pub fn get_perspective_matrix(&self, perspective: cgmath::Perspective<f32>) -> [[f32; 4]; 4] {
+        cgmath::Matrix4::from(perspective).getArray()
     }
 }
 
