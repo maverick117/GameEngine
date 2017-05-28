@@ -232,11 +232,11 @@ impl System for LogicSystem {
                             }
                             RBracket => {
                                 //println!("{:?}", self.scene.camera);
-                                //self.scene.camera.zoom(1.0);
+                                // self.scene.camera.zoom(1.0);
                             }
                             LBracket => {
                                 //println!("{:?}", self.scene.camera);
-                                //self.scene.camera.zoom(-1.0);
+                                // self.scene.camera.zoom(-1.0);
                             }
                             W => {
                                 //println!("{:?}", self.scene.camera);
