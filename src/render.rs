@@ -13,6 +13,8 @@ use cgmath;
 use logic::*;
 use tool::*;
 use glium::Surface;
+use glium_text;
+use std;
 
 #[derive(Clone,Debug)]
 pub enum RenderMsg {
@@ -202,9 +204,10 @@ impl RenderSystem {
         }
 
         implement_vertex!(Vertex, position, normal, color_diffuse, color_specular);
-
+        let mut target = self.window.draw();
+        let mut vertex_data: Vec<Vertex> = Vec::new();
         for object in scene.objects {
-            let mut vertex_data: Vec<Vertex> = Vec::new();
+
             for model in &object.models {
                 let mesh = &model.mesh;
                 //let mut vertex_data = Vec::new();
@@ -263,7 +266,7 @@ impl RenderSystem {
                 ..Default::default()
             };
 
-            let mut target = self.window.draw();
+
             target.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
             target
                 .draw(&vertex_buffer,
@@ -272,8 +275,23 @@ impl RenderSystem {
                       &uniforms,
                       &params)
                 .unwrap();
-            target.finish().unwrap();
+
         }
+        /*
+        let text_system = glium_text::TextSystem::new(&self.window);
+        let font = glium_text::FontTexture::new(&self.window, std::fs::File::open(&std::path::Path::new("/usr/share/fonts/TTF/UbuntuMono-R.ttf")).unwrap(),24).unwrap();
+        let text = glium_text::TextDisplay::new(&text_system, &font, "Hello World!");
+        let matrix = [[1.0, 0.0, 0.0, 0.0],
+                      [0.0, 1.0, 0.0, 0.0],
+                      [0.0, 0.0, 1.0, 0.0],
+                      [0.0, 0.0, 0.0, 1.0]];
+        glium_text::draw(&text,
+                         &text_system,
+                         &mut self.window.draw(),
+                         matrix,
+                         (1.0, 1.0, 0.0, 1.0));
+                         */
+        target.finish().unwrap();
         Some(()) // TODO: None
     }
 }
