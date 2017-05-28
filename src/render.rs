@@ -194,12 +194,6 @@ impl RenderSystem {
                         // texcoord = [u, v];
                         texture = [mesh.texcoords[i * 2], mesh.texcoords[i * 2 + 1]];
                     }
-                    let v = Vertex {
-                            position: position,
-                            normal: normal,
-                            texture: texture,
-                        };
-                    println!("{:?}", v);
                     vertex_data.push(Vertex {
                                          position: position,
                                          normal: normal,
@@ -240,7 +234,6 @@ impl RenderSystem {
                 target.finish().unwrap();
             }
         }
-        panic!();
         Some(()) // TODO: None
     }
 }
