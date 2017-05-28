@@ -86,7 +86,7 @@ fn main() {
     let (logic_tx, logic_rx) = mpsc::channel();
     let (console_tx, console_rx) = mpsc::channel();
     let (audio_tx, audio_rx) = mpsc::channel();
-
+/*
     let tmp_vec = vec![render_tx.clone(),
                        model_tx.clone(),
                        logic_tx.clone(),
@@ -98,6 +98,7 @@ fn main() {
                                         tmp_vec,
                                         input_rx)
                       });
+                      */
     let tmp_vec = vec![input_tx.clone(),
                        model_tx.clone(),
                        logic_tx.clone(),
@@ -154,7 +155,7 @@ fn main() {
                                         logic_rx)
                       });
 
-    input_handle.join().unwrap();
+    //input_handle.join().unwrap();
     render_handle.join().unwrap();
     console_handle.join().unwrap();
     logic_handle.join().unwrap();

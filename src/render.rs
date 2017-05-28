@@ -36,12 +36,40 @@ impl System for RenderSystem {
         let mut should_run = true;
         while should_run {
             let event_list: Vec<Event> = self.window.poll_events().collect();
-            if event_list.len() > 0 {
-                println!("{:?}", event_list);
-                use MsgContent::*;
-                let event_msg = Msg { content: Render(RenderMsg::InputQueue(event_list)) };
-                self.msg_tx[0].send(event_msg).unwrap();
+            for event in event_list {
+                use glium::glutin::Event::*;
+                use super::*;
+                match event {
+                    Resized(width, height) => {
+                        println!("DEBUG: Window Resized: {:?} x {:?}", width, height);
+                    }
+                    Closed => {
+                        use MsgContent;
+                        use SystemMsg;
+                        let halt_msg = Msg { content: MsgContent::System(SystemMsg::SysHalt) };
+                        for tx in &self.msg_tx {
+                            tx.send(halt_msg.clone()).unwrap();
+                        }
+                        should_run = false;
+                    }
+                    KeyboardInput(state, ch, Some(key)) => {
+                        match state {
+                            glutin::ElementState::Pressed => {
+                                let pressed_msg =
+                                    Msg { content: MsgContent::Input(InputMsg::KeyDown(key)) };
+                                self.msg_tx[2].send(pressed_msg);
+                            }
+                            glutin::ElementState::Released => {
+                                let lifted_msg =
+                                    Msg { content: MsgContent::Input(InputMsg::KeyUp(key)) };
+                                self.msg_tx[2].send(lifted_msg);
+                            }
+                        };
+                    }
+                    _ => {}
+                }
             }
+
             let mut msg_list: Vec<Msg> = Vec::new();
             //msg_list.push(self.msg_rx.recv().unwrap());
             while let Ok(msg) = self.msg_rx.try_recv() {
@@ -60,7 +88,7 @@ impl System for RenderSystem {
                         let result = self.render(scene);
                         let render_msg = Msg { content: Render(RenderMsg::RenderResult(result)) };
                         self.msg_tx[2].send(render_msg);
-                    },
+                    }
                     _ => {}
                 }
 
@@ -161,7 +189,7 @@ impl RenderSystem {
                 println!("{:?}", scene.camera.get_projection_matrix());
                 println!("{:?}", scene.camera.get_view_matrix());
                 println!("{:?}", object.get_model_matrix());
-                
+
                 let uniforms = uniform! {
                     proj_matrix: scene.camera.get_projection_matrix(),
                     view_matrix: scene.camera.get_view_matrix(),
@@ -176,7 +204,7 @@ impl RenderSystem {
                     },
                     ..Default::default()
                 };
-                
+
                 let mut target = self.window.draw();
                 target.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
                 target

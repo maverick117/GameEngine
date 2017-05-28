@@ -24,7 +24,7 @@ impl System for ConsoleSystem {
             let elapsed_time = SystemTime::now()
                 .duration_since(self.startup_time)
                 .expect("duration_since failed.");
-            println!("{:?}: {:?}", elapsed_time, msg);
+            //println!("{:?}: {:?}", elapsed_time, msg);
             if let MsgContent::System(SystemMsg::SysHalt) = msg.content {
                 break;
             }
