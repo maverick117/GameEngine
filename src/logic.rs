@@ -170,10 +170,10 @@ impl System for LogicSystem {
                         match key {
                             Left => {println!("{:?}", self.scene.objects[0].get_model_matrix());self.scene.objects[0].rotate(Axis::Axis_y,-5.0);}
                             Right => {println!("{:?}", self.scene.objects[0].get_model_matrix());self.scene.objects[0].rotate(Axis::Axis_y,5.0);}
-                            RBracket => {self.scene.camera.zoom(1.0);},
-                            LBracket => {self.scene.camera.zoom(-1.0);},
-                            W => {self.scene.camera.move_y(1.0);},
-                            S => {self.scene.camera.move_y(-1.0);},
+                            RBracket => {println!("{:?}",self.scene.camera);self.scene.camera.zoom(1.0);},
+                            LBracket => {println!("{:?}",self.scene.camera);self.scene.camera.zoom(-1.0);},
+                            W => {println!("{:?}",self.scene.camera);self.scene.camera.move_y(1.0);},
+                            S => {println!("{:?}",self.scene.camera);self.scene.camera.move_y(-1.0);},
                             _ => {}
                         }
                     }
