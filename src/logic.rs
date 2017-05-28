@@ -62,16 +62,16 @@ impl Object {
             materials: materials,
             translate_matrix: Matrix4::from_translation(Vector3::new(0.0, 0.0, 0.0)),
             rotate_matrix: Matrix4::from_angle_x(Rad(0.0)),
-            scale_matrix: Matrix4::from_scale(1.0),
+            scale_matrix: Matrix4::from_scale(0.2),
             path: path,
             speed: Vector3::new(0.0, 0.0, 0.0),
         }
     }
 
     fn set_transform(&mut self) {
-        let dx = self.speed[0].clone();
-        let dy = self.speed[1].clone();
-        let dz = self.speed[2].clone();
+        let dx = self.speed[0].clone() * 2.0;
+        let dy = self.speed[1].clone() * 2.0;
+        let dz = self.speed[2].clone() * 2.0;
         self.translate(dx, dy, dz);
         self.rotate_matrix = Matrix4::from_angle_y(Deg(dx * 100.));
 
@@ -122,8 +122,8 @@ impl System for LogicSystem {
             diffuse: cgmath::Vector3::new(1.0, 1.0, 1.0),
             speculer: cgmath::Vector3::new(1.0, 1.0, 1.0),
         };
-        let mut static_object_path: Vec<String> = Vec::new();\
-        static_object_path.push("assets/model/Dassault_Mirage_V.obj".to_string());
+        let mut static_object_path: Vec<String> = Vec::new();
+        static_object_path.push("assets/model/jet1.obj".to_string());
         //static_object_path.push("assets/model/cube.obj".to_string());
 
         for path in static_object_path {

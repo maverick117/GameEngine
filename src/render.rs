@@ -13,6 +13,8 @@ use cgmath;
 use logic::*;
 use tool::*;
 use glium::Surface;
+use glium_text;
+use std;
 
 #[derive(Clone,Debug)]
 pub enum RenderMsg {
@@ -252,6 +254,20 @@ impl RenderSystem {
                 .unwrap();
 
         }
+        /*
+        let text_system = glium_text::TextSystem::new(&self.window);
+        let font = glium_text::FontTexture::new(&self.window, std::fs::File::open(&std::path::Path::new("/usr/share/fonts/TTF/UbuntuMono-R.ttf")).unwrap(),24).unwrap();
+        let text = glium_text::TextDisplay::new(&text_system, &font, "Hello World!");
+        let matrix = [[1.0, 0.0, 0.0, 0.0],
+                      [0.0, 1.0, 0.0, 0.0],
+                      [0.0, 0.0, 1.0, 0.0],
+                      [0.0, 0.0, 0.0, 1.0]];
+        glium_text::draw(&text,
+                         &text_system,
+                         &mut self.window.draw(),
+                         matrix,
+                         (1.0, 1.0, 0.0, 1.0));
+                         */
         target.finish().unwrap();
         Some(()) // TODO: None
     }

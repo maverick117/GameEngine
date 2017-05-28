@@ -3,6 +3,7 @@ extern crate glium;
 extern crate baal;
 extern crate tobj;
 extern crate cgmath;
+extern crate glium_text;
 
 mod console;
 mod render;
