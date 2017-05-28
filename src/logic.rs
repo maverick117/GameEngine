@@ -58,9 +58,9 @@ impl Object {
         Object {
             models: models,
             materials: materials,
-            translate_matrix: Matrix4::from_translation(Vector3::new(0.0, 0.0, 0.0)),
+            translate_matrix: Matrix4::from_translation(Vector3::new(1.0, 0.0, 0.0)),
             rotate_matrix: Matrix4::from_angle_x(Rad(0.0)),
-            scale_matrix: Matrix4::from_scale(0.5),
+            scale_matrix: Matrix4::from_scale(0.6),
             path: path,
         }
     }
@@ -127,14 +127,14 @@ impl System for LogicSystem {
             println!("TRY TO RECV MSG... [FIN]");
         }
         let perspective = cgmath::Perspective{
-            left: -10.0,
-            right: 10.0,
-            bottom: -10.0,
-            top: 10.0,
-            near: 0.1,
-            far: 10000.0,
+            left: -4.0,
+            right: 4.0,
+            bottom: -4.0,
+            top: 4.0,
+            near: 1.0,
+            far: 20.0,
             };
-        self.scene.camera = Camera::new(Point3::new(0.0, 0.0, 9.0), Point3::new(0.0, 0.0, 0.0), Vector3::new(0.0, 1.0, 0.0));
+        self.scene.camera = Camera::new(Point3::new(0.0, 0.0, 10.0), Point3::new(0.0, 0.0, 0.0), Vector3::new(0.0, 1.0, 0.0));
         self.scene.camera.set_projection_matrix(cgmath::Matrix4::from(perspective));
         println!("Model Matrix: {:?}", self.scene.objects[0].get_model_matrix());
         println!("View Matrix: {:?}", self.scene.camera.get_view_matrix());
@@ -170,6 +170,10 @@ impl System for LogicSystem {
                         match key {
                             Left => {println!("{:?}", self.scene.objects[0].get_model_matrix());self.scene.objects[0].rotate(Axis::Axis_y,-5.0);}
                             Right => {println!("{:?}", self.scene.objects[0].get_model_matrix());self.scene.objects[0].rotate(Axis::Axis_y,5.0);}
+                            RBracket => {self.scene.camera.zoom(1.0);},
+                            LBracket => {self.scene.camera.zoom(-1.0);},
+                            W => {self.scene.camera.move_y(1.0);},
+                            S => {self.scene.camera.move_y(-1.0);},
                             _ => {}
                         }
                     }
