@@ -125,46 +125,68 @@ impl RenderSystem {
                     in vec3 position;
                     in vec3 normal;
                     in vec3 color_diffuse;
-                    in vec4 color_specular;
+                    in vec3 color_specular;
+                    in float shininess;
 
                     out vec3 v_position;
                     out vec3 v_normal;
                     out vec3 v_color_diffuse;
-                    out vec4 v_color_specular;
+                    out vec3 v_color_specular;
+                    out float f_shininess;
 
                     void main() {{
                         v_position = position;
-                        v_normal = normal;
+                        v_normal = vec3(model_matrix * vec4(normal, 0.0));
                         v_color_diffuse = color_diffuse;
                         v_color_specular = color_specular;
+                        f_shininess = shininess;
                         gl_Position = proj_matrix * view_matrix * model_matrix * vec4(v_position, 1.0);
                     }}
                 ",
                 fragment: "
                     #version 330
+                    uniform vec3 eyePos;
 
                     in vec3 v_position;
                     in vec3 v_normal;
                     in vec3 v_color_diffuse;
-                    in vec4 v_color_specular;
+                    in vec3 v_color_specular;
+                    in float f_shininess;
+
                     // to implement
                     void main() {
-
-                        vec3 lightPos = vec3(0.0, 1.0, 0.0);
+                        // TODO: set light as an input
+                        vec3 lightPos = vec3(1000.0, 1000.0, 1000.0);
                         vec3 lightColor = vec3(1.0, 1.0, 1.0);
-                        vec3 objectColor = vec3(0.4, 0.3, 0.05);
+                        vec3 tempcolor = vec3(0.4, 0.3, 0.05);
+                        vec3 color = vec3(0.0);
+
+                        vec3 norm = normalize(v_normal);
+                        if (dot(norm, norm) < 0.00001) {
+                            norm = normalize(cross(dFdx(v_position), dFdy(v_position)));
+                        }
 
                         // ambient color
-                        vec3 ambient = 0.1 * lightColor;
+                        vec3 ambient = 0.1 * tempcolor;
 
                         // diffuse color
-                        vec3 norm = normalize(v_normal);
                         vec3 lightDir = normalize(lightPos - v_position);
-                        float diff = max(dot(norm, lightColor), 0.0);
-                        vec3 diffuse = diff * lightColor;
 
-                        vec3 result = (ambient + diffuse) * objectColor;
-                        gl_FragColor = vec4(result, 1.0f);
+                        float n_dot_l = max(dot(norm, lightDir), 0.0);
+                        vec3 diffuse = 0.9 * n_dot_l * tempcolor;//v_color_diffuse;
+                        // vec3 diffuse = 0.9 * n_dot_l * v_color_diffuse;
+
+                        // specular color
+                        vec3 viewDir = normalize(eyePos - v_position);
+                        vec3 half_vec = normalize(lightDir + viewDir);
+
+                        float n_dot_h = max(dot(norm, lightDir), 0.0);
+                        // vec3 specular = 0.5 * pow(n_dot_h, f_shininess) * v_color_specular.rgb;
+                        vec3 specular = 0.5 * pow(n_dot_h, 100) * lightColor;
+
+
+                        color = ambient + diffuse + specular;
+                        gl_FragColor = vec4(color, 1.0f);
 
                     }
                 ",
@@ -229,6 +251,7 @@ impl RenderSystem {
                 proj_matrix: scene.camera.get_projection_matrix(),
                 view_matrix: scene.camera.get_view_matrix(),
                 model_matrix: object.get_model_matrix(),
+                eyePos: [scene.camera.eye.x, scene.camera.eye.y, scene.camera.eye.z],
             };
             // draw parameters
             let params = glium::DrawParameters {
