@@ -58,9 +58,9 @@ impl Object {
         Object {
             models: models,
             materials: materials,
-            translate_matrix: Matrix4::from_translation(Vector3::new(1.0, 0.0, 0.0)),
+            translate_matrix: Matrix4::from_translation(Vector3::new(0.0, 0.0, 0.0)),
             rotate_matrix: Matrix4::from_angle_x(Rad(0.0)),
-            scale_matrix: Matrix4::from_scale(0.6),
+            scale_matrix: Matrix4::from_scale(0.3),
             path: path,
         }
     }
@@ -142,7 +142,7 @@ impl System for LogicSystem {
             near: 1.0,
             far: 20.0,
         };
-        self.scene.camera = Camera::new(Point3::new(0.0, 0.0, 10.0),
+        self.scene.camera = Camera::new(Point3::new(0.0, 0.0, 70.0),
                                         Point3::new(0.0, 0.0, 0.0),
                                         Vector3::new(0.0, 1.0, 0.0));
         self.scene
