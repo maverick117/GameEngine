@@ -2,6 +2,7 @@
 
 use std::sync::mpsc::*;
 use std::sync::{Arc, Mutex};
+use std::collections::HashMap;
 use glutin::Event;
 use tobj;
 use tobj::{Model, Material, Mesh};
@@ -51,6 +52,7 @@ pub struct Object {
     scale_matrix: Matrix4<f32>,
     // model_transform_matrix: [[f32; 4]; 4],
     pub path: String,
+    pub speed: Vector3<f32>,
 }
 
 impl Object {
@@ -62,7 +64,17 @@ impl Object {
             rotate_matrix: Matrix4::from_angle_x(Rad(0.0)),
             scale_matrix: Matrix4::from_scale(1.0),
             path: path,
+            speed: Vector3::new(0.0, 0.0, 0.0),
         }
+    }
+
+    fn set_transform(&mut self) {
+        let dx = self.speed[0].clone();
+        let dy = self.speed[1].clone();
+        let dz = self.speed[2].clone();
+        self.translate(dx, dy, dz);
+        self.rotate_matrix = Matrix4::from_angle_y(Deg(dx * 100.));
+
     }
 
     fn translate(&mut self, dx: f32, dy: f32, dz: f32) {
@@ -88,14 +100,16 @@ impl Object {
     }
 }
 
+type PlayerID = usize;
+type ModelID = usize;
+
 pub struct LogicSystem {
     msg_tx: Vec<Sender<Msg>>,
     msg_rx: Receiver<Msg>,
     mouse_x: i32,
     mouse_y: i32,
-    object_list: Vec<Object>,
-    selected_object_index: usize,
     scene: Scene,
+    player_to_model_mapping: HashMap<PlayerID, ModelID>,
 }
 
 impl System for LogicSystem {
@@ -108,13 +122,14 @@ impl System for LogicSystem {
             diffuse: cgmath::Vector3::new(1.0, 1.0, 1.0),
             speculer: cgmath::Vector3::new(1.0, 1.0, 1.0),
         };
-        let mut static_object_path: Vec<String> = Vec::new();
-        static_object_path.push("assets/model/_Parachute.obj".to_string());
+        let mut static_object_path: Vec<String> = Vec::new();\
+        static_object_path.push("assets/model/Dassault_Mirage_V.obj".to_string());
+        //static_object_path.push("assets/model/cube.obj".to_string());
 
         for path in static_object_path {
             let msg = Msg { content: Logic(LogicMsg::ModelReq(path.clone())) };
             self.msg_tx[3].send(msg);
-            println!("TRY TO RECV MSG...");
+            //println!("TRY TO RECV MSG...");
             if let Ok(msg) = self.msg_rx.recv() {
                 match msg.content {
                     Model(ObjectResult(Some(obj))) => {
@@ -126,7 +141,7 @@ impl System for LogicSystem {
                     }
                 }
             }
-            println!("TRY TO RECV MSG... [FIN]");
+            //println!("TRY TO RECV MSG... [FIN]");
         }
         let perspective = cgmath::Perspective {
             left: -4.0,
@@ -142,7 +157,7 @@ impl System for LogicSystem {
             near: 1.0,
             far: 20.0,
         };
-        self.scene.camera = Camera::new(Point3::new(0.0, 0.0, 70.0),
+        self.scene.camera = Camera::new(Point3::new(0.0, 0.0, 10.0),
                                         Point3::new(0.0, 0.0, 0.0),
                                         Vector3::new(0.0, 1.0, 0.0));
         self.scene
@@ -181,32 +196,55 @@ impl System for LogicSystem {
                         }
                         render_ready = true;
                     }
+                    MsgContent::Input(InputMsg::KeyUp(key)) => {
+                        use glium::glutin::VirtualKeyCode::*;
+                        match key {
+                            Left | Right => {
+                                self.scene.objects[0].speed[0] = 0.0;
+                            }
+                            Up | Down => {
+                                self.scene.objects[0].speed[1] = 0.0;
+                            }
+                            _ => {}
+                        }
+                    }
                     MsgContent::Input(InputMsg::KeyDown(key)) => {
                         use glium::glutin::VirtualKeyCode::*;
                         match key {
                             Left => {
                                 //println!("{:?}", self.scene.objects[0].get_model_matrix());
-                                self.scene.objects[0].rotate(Axis::Axis_y, -5.0);
+                                //self.scene.objects[0].rotate(Axis::Axis_y, -5.0);
+                                self.scene.objects[0].speed[0] = -0.1;
                             }
                             Right => {
                                 //println!("{:?}", self.scene.objects[0].get_model_matrix());
-                                self.scene.objects[0].rotate(Axis::Axis_y, 5.0);
+                                //self.scene.objects[0].rotate(Axis::Axis_y, 5.0);
+                                self.scene.objects[0].speed[0] = 0.1;
+                            }
+                            Up => {
+                                self.scene.objects[0].speed[1] = 0.1;
+                            }
+                            Down => {
+                                self.scene.objects[0].speed[1] = -0.1;
+                            }
+                            Space => {
+                                println!("Shoot!");
                             }
                             RBracket => {
                                 //println!("{:?}", self.scene.camera);
-                                self.scene.camera.zoom(1.0);
+                                //self.scene.camera.zoom(1.0);
                             }
                             LBracket => {
                                 //println!("{:?}", self.scene.camera);
-                                self.scene.camera.zoom(-1.0);
+                                //self.scene.camera.zoom(-1.0);
                             }
                             W => {
                                 //println!("{:?}", self.scene.camera);
-                                self.scene.camera.move_y(1.0);
+                                //self.scene.camera.move_y(1.0);
                             }
                             S => {
                                 //println!("{:?}", self.scene.camera);
-                                self.scene.camera.move_y(-1.0);
+                                //self.scene.camera.move_y(-1.0);
                             }
                             _ => {}
                         }
@@ -214,11 +252,13 @@ impl System for LogicSystem {
                     c => {}
                 }
             }
+            for object in &mut self.scene.objects {
+                object.set_transform();
+            }
             // Pass to renderer
             if render_ready {
                 let msg = Msg { content: Logic(LogicMsg::SceneSnd(self.scene.clone())) };
                 self.msg_tx[1].send(msg);
-                //println!("Logic Msg Sent!!!");
                 render_ready = false;
             }
 
@@ -233,48 +273,16 @@ impl LogicSystem {
             msg_rx: msg_rx,
             mouse_x: 0,
             mouse_y: 0,
-            object_list: Vec::new(),
-            selected_object_index: 0,
             scene: Scene::new(Vec::new(),
                               Vec::new(),
                               Camera::new(Point3::new(0.0, 0.0, 1.0),
                                           Point3::new(0.0, 0.0, 0.0),
                                           Vector3::new(0.0, 1.0, 0.0))),
+            player_to_model_mapping: HashMap::new(),
         }
     }
 
-    fn process_keydown(&mut self, key: glutin::VirtualKeyCode) {
-        // Logic for key down
-        use glutin::VirtualKeyCode::*;
-        match key {
-            Up => {
-                self.object_list[self.selected_object_index].translate(0.0, 0.1, 0.0);
-            }
-            Down => {
-                self.object_list[self.selected_object_index].translate(0.0, -0.1, 0.0);
-            }
-            Left => {
-                self.object_list[self.selected_object_index].translate(0.1, 0.0, 0.0);
-            }
-            Right => {
-                self.object_list[self.selected_object_index].translate(-0.1, 0.0, 0.0);
-            }
-            Space => {
-                // Generate another projectile
-            }
-            Snapshot => {}
-            _ => {}
-        }
-    }
-
-    fn process_keyup(&mut self, key: glutin::VirtualKeyCode) {}
-
-    fn process_mouseup(&mut self, key: glutin::MouseButton) {}
-
-    fn process_mousedown(&mut self, key: glutin::MouseButton) {}
-
-    fn process_mousemove(&mut self, xcoord: i32, ycoord: i32) {
-        let dx = xcoord - self.mouse_x;
-        let dy = ycoord - self.mouse_y;
+    fn register_user_model(&mut self, user_id: PlayerID, model_id: ModelID) {
+        // TODO: register a model with a player
     }
 }
