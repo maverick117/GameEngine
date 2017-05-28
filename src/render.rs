@@ -262,7 +262,7 @@ impl Camera {
     }
     pub fn get_view_matrix(&self) -> [[f32; 4]; 4] {
         use cgmath::Matrix;
-        cgmath::Matrix4::look_at(self.eye, self.center, self.up).transpose().getArray()
+        cgmath::Matrix4::look_at(self.eye, self.center, self.up).getArray()
     }
     pub fn get_projection_matrix(&self) -> [[f32; 4]; 4] {
         self.projection_matrix
@@ -270,7 +270,15 @@ impl Camera {
 
     pub fn set_projection_matrix(&mut self, m: cgmath::Matrix4<f32>) {
         use cgmath::Matrix;
-        self.projection_matrix = m.getArray();
+        self.projection_matrix = m.transpose().getArray();
+    }
+
+    pub fn zoom(&mut self, dist:f32) {
+        self.eye.z += dist;
+    }
+
+    pub fn move_y(&mut self, dist:f32) {
+        self.eye.y += dist;
     }
 }
 
