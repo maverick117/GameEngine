@@ -60,7 +60,7 @@ impl Object {
             materials: materials,
             translate_matrix: Matrix4::from_translation(Vector3::new(0.0, 0.0, 0.0)),
             rotate_matrix: Matrix4::from_angle_x(Rad(0.0)),
-            scale_matrix: Matrix4::from_scale(0.3),
+            scale_matrix: Matrix4::from_scale(1.0),
             path: path,
         }
     }
@@ -109,7 +109,7 @@ impl System for LogicSystem {
             speculer: cgmath::Vector3::new(1.0, 1.0, 1.0),
         };
         let mut static_object_path: Vec<String> = Vec::new();
-        static_object_path.push("assets/model/Dassault_Mirage_V.obj".to_string());
+        static_object_path.push("assets/model/_Parachute.obj".to_string());
 
         for path in static_object_path {
             let msg = Msg { content: Logic(LogicMsg::ModelReq(path.clone())) };
