@@ -153,7 +153,6 @@ fn main() {
                                         tmp_vec,
                                         logic_rx)
                       });
-    let audio_handle = thread::spawn(move || spawn_systems(audio_system));
 
     input_handle.join().unwrap();
     render_handle.join().unwrap();

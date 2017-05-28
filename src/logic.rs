@@ -129,14 +129,16 @@ impl System for LogicSystem {
         let perspective = cgmath::Perspective{
             left: -2.0,
             right: 2.0,
-            bottom: -2.0,
-            top: 2.0,
+            bottom: -1.5,
+            top: 1.5,
             near: 0.1,
-            far: 10.0,
+            far: 50.0,
             };
-        self.scene.camera = Camera::new(Point3::new(1.0, 1.0, 1.0), Point3::new(0.0, 0.0, 0.0), Vector3::new(0.0, 1.0, 0.0));
+        self.scene.camera = Camera::new(Point3::new(0.0, 0.0, 1.0), Point3::new(0.0, 0.0, 0.0), Vector3::new(0.0, 1.0, 0.0));
         self.scene.camera.set_projection_matrix(cgmath::Matrix4::from(perspective));
-        // println!("{:?}", cgmath::Matrix4::from(perspective));
+        println!("Model Matrix: {:?}", self.scene.objects[0].get_model_matrix());
+        println!("View Matrix: {:?}", self.scene.camera.get_view_matrix());
+        println!("Proj Matrix: {:?}", self.scene.camera.get_projection_matrix());
         println!("Logic System Initilized.")
     }
     fn main_loop(&mut self) {
@@ -161,6 +163,14 @@ impl System for LogicSystem {
                     MsgContent::Render(RenderMsg::RenderResult(r)) => {
                         if !r.is_some() {
                             println!("Recv msg from Renderer: Fail to render...");
+                        }
+                    }
+                    MsgContent::Input(InputMsg::KeyDown(key)) => {
+                        use glium::glutin::VirtualKeyCode::*;
+                        match key {
+                            Left => {println!("{:?}", self.scene.objects[0].get_model_matrix());self.scene.objects[0].rotate(Axis::Axis_y,-15.0);}
+                            Right => {}
+                            _ => {}
                         }
                     }
                     c => {}
