@@ -140,7 +140,7 @@ impl RenderSystem {
                     in vec3 v_normal;
                     // to implement
                     void main() {
-                        
+
                         vec3 lightPos = vec3(0.0, 1.0, 0.0);
                         vec3 lightColor = vec3(1.0, 1.0, 1.0);
                         vec3 objectColor = vec3(0.4, 0.3, 0.05);
@@ -166,7 +166,7 @@ impl RenderSystem {
         for object in scene.objects {
             for model in &object.models {
                 let mesh = &model.mesh;
-                #[derive(Copy, Clone)]
+                #[derive(Copy, Clone, Debug)]
                 struct Vertex {
                     position: [f32; 3],
                     normal: [f32; 3],
@@ -178,7 +178,7 @@ impl RenderSystem {
                 let mut vertex_data = Vec::new();
                 for i in &mesh.indices {
                     let i = *i as usize;
-                    let mut normal: [f32; 3] = [1., 1., 1.];
+                    let mut normal: [f32; 3] = [0., 0., 0.];
                     let mut texture: [f32; 2] = [0., 0.];
                     let position = [mesh.positions[i * 3],
                                     mesh.positions[i * 3 + 1],
@@ -194,7 +194,12 @@ impl RenderSystem {
                         // texcoord = [u, v];
                         texture = [mesh.texcoords[i * 2], mesh.texcoords[i * 2 + 1]];
                     }
-
+                    let v = Vertex {
+                            position: position,
+                            normal: normal,
+                            texture: texture,
+                        };
+                    println!("{:?}", v);
                     vertex_data.push(Vertex {
                                          position: position,
                                          normal: normal,
@@ -204,9 +209,9 @@ impl RenderSystem {
                 let vertex_buffer = glium::vertex::VertexBuffer::new(&self.window, &vertex_data)
                     .unwrap()
                     .into_vertex_buffer_any();
-                println!("{:?}", scene.camera.get_projection_matrix());
-                println!("{:?}", scene.camera.get_view_matrix());
-                println!("{:?}", object.get_model_matrix());
+                //println!("{:?}", scene.camera.get_projection_matrix());
+                //println!("{:?}", scene.camera.get_view_matrix());
+                //println!("{:?}", object.get_model_matrix());
 
                 let uniforms = uniform! {
                     proj_matrix: scene.camera.get_projection_matrix(),
@@ -235,6 +240,7 @@ impl RenderSystem {
                 target.finish().unwrap();
             }
         }
+        panic!();
         Some(()) // TODO: None
     }
 }
