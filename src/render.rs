@@ -76,7 +76,7 @@ impl System for RenderSystem {
                 msg_list.push(msg);
             }
             for msg in msg_list {
-                println!("Render received: {:?}", msg);
+                //println!("Render received: {:?}", msg);
                 use Event::*;
                 use MsgContent::*;
                 use SystemMsg::*;
