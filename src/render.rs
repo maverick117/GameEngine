@@ -180,9 +180,10 @@ impl RenderSystem {
         }
 
         implement_vertex!(Vertex, position, normal, color_diffuse, color_specular);
-
+        let mut target = self.window.draw();
+        let mut vertex_data: Vec<Vertex> = Vec::new();
         for object in scene.objects {
-            let mut vertex_data: Vec<Vertex> = Vec::new();
+
             for model in &object.models {
                 let mesh = &model.mesh;
                 //let mut vertex_data = Vec::new();
@@ -240,7 +241,7 @@ impl RenderSystem {
                 ..Default::default()
             };
 
-            let mut target = self.window.draw();
+
             target.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
             target
                 .draw(&vertex_buffer,
@@ -249,8 +250,9 @@ impl RenderSystem {
                       &uniforms,
                       &params)
                 .unwrap();
-            target.finish().unwrap();
+
         }
+        target.finish().unwrap();
         Some(()) // TODO: None
     }
 }
