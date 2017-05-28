@@ -136,12 +136,18 @@ impl System for LogicSystem {
             near: 1.0,
             far: 20.0,
         };
+        let perspectivefov = cgmath::PerspectiveFov {
+            fovy: Rad(3.14159/3.0),
+            aspect: 1.0,
+            near: 1.0,
+            far: 20.0,
+        };
         self.scene.camera = Camera::new(Point3::new(0.0, 0.0, 10.0),
                                         Point3::new(0.0, 0.0, 0.0),
                                         Vector3::new(0.0, 1.0, 0.0));
         self.scene
             .camera
-            .set_projection_matrix(cgmath::Matrix4::from(perspective));
+            .set_projection_matrix(cgmath::Matrix4::from(perspectivefov));
         println!("Model Matrix: {:?}",
                  self.scene.objects[0].get_model_matrix());
         println!("View Matrix: {:?}", self.scene.camera.get_view_matrix());
