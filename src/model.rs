@@ -26,7 +26,7 @@ impl System for ModelSystem {
         let model_path = Path::new("assets/model");
         for entry in model_path.read_dir().expect("Read model directory failed.") {
             if let Ok(entry) = entry {
-                println!("{:?}",entry);
+                // println!("{:?}",entry);
                 let load_result = tobj::load_obj(&entry.path());
                 let (models, materials) = load_result.expect("Load object failed");
                 self.objects
@@ -35,7 +35,7 @@ impl System for ModelSystem {
                                       entry.path().into_os_string().into_string().unwrap()));
             }
         }
-        println!("Model load finished. Objects: {:?}", self.objects);
+        // println!("Model load finished. Objects: {:?}", self.objects);
     }
     fn main_loop(&mut self) {
         let mut should_run = true;
@@ -46,7 +46,7 @@ impl System for ModelSystem {
                 msg_list.push(msg);
             }
             for msg in msg_list {
-                println!("Model received: {:?}", msg);
+                // println!("Model received: {:?}", msg);
                 use Event::*;
                 use MsgContent::*;
                 use SystemMsg::*;
