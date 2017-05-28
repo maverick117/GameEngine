@@ -104,7 +104,7 @@ impl RenderSystem {
         RenderSystem {
             window: glutin::WindowBuilder::new()
                 .with_title("Engine Demo".to_string())
-                .with_dimensions(1024, 768)
+                .with_dimensions(1000, 1000)
                 .with_vsync()
                 .with_depth_buffer(24)
                 .build_glium()
@@ -136,9 +136,27 @@ impl RenderSystem {
                 ",
                 fragment: "
                     #version 330
+                    in vec3 v_position;
+                    in vec3 v_normal;
                     // to implement
                     void main() {
-                        gl_FragColor = vec4(0.4, 0.3, 0.05, 1.0);
+                        
+                        vec3 lightPos = vec3(0.0, 1.0, 0.0);
+                        vec3 lightColor = vec3(1.0, 1.0, 1.0);
+                        vec3 objectColor = vec3(0.4, 0.3, 0.05);
+
+                        // ambient color
+                        vec3 ambient = 0.1 * lightColor;
+                        
+                        // diffuse color
+                        vec3 norm = normalize(v_normal);
+                        vec3 lightDir = normalize(lightPos - v_position);
+                        float diff = max(dot(norm, lightColor), 0.0);
+                        vec3 diffuse = diff * lightColor;
+
+                        vec3 result = (ambient + diffuse) * objectColor;
+                        gl_FragColor = vec4(result, 1.0f);
+
                     }
                 ",
             },
@@ -244,13 +262,15 @@ impl Camera {
         }
     }
     pub fn get_view_matrix(&self) -> [[f32; 4]; 4] {
-        cgmath::Matrix4::look_at(self.eye, self.center, self.up).getArray()
+        use cgmath::Matrix;
+        cgmath::Matrix4::look_at(self.eye, self.center, self.up).transpose().getArray()
     }
     pub fn get_projection_matrix(&self) -> [[f32; 4]; 4] {
         self.projection_matrix
     }
 
     pub fn set_projection_matrix(&mut self, m: cgmath::Matrix4<f32>) {
+        use cgmath::Matrix;
         self.projection_matrix = m.getArray();
     }
 }

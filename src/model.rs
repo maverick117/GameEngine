@@ -26,6 +26,7 @@ impl System for ModelSystem {
         let model_path = Path::new("assets/model");
         for entry in model_path.read_dir().expect("Read model directory failed.") {
             if let Ok(entry) = entry {
+                println!("{:?}",entry);
                 let load_result = tobj::load_obj(&entry.path());
                 let (models, materials) = load_result.expect("Load object failed");
                 self.objects

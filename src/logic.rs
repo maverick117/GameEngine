@@ -60,7 +60,7 @@ impl Object {
             materials: materials,
             translate_matrix: Matrix4::from_translation(Vector3::new(0.0, 0.0, 0.0)),
             rotate_matrix: Matrix4::from_angle_x(Rad(0.0)),
-            scale_matrix: Matrix4::from_scale(1.0),
+            scale_matrix: Matrix4::from_scale(0.5),
             path: path,
         }
     }
@@ -109,7 +109,7 @@ impl System for LogicSystem {
                 speculer: cgmath::Vector3::new(1.0, 1.0, 1.0),
         };
         let mut static_object_path: Vec<String> = Vec::new();
-        static_object_path.push("assets/model/cube.obj".to_string());
+        static_object_path.push("assets/model/teapot.obj".to_string());
 
         for path in static_object_path {
             let msg = Msg { content: Logic(LogicMsg::ModelReq(path.clone()))};
@@ -121,20 +121,20 @@ impl System for LogicSystem {
                         self.scene.objects.push(obj);
                     },
                     Model(ObjectResult(None)) => unimplemented!(),
-                    _ => unimplemented!(),
+                    c => {println!("{:?}", c);  },
                 }
             }
             println!("TRY TO RECV MSG... [FIN]");
         }
         let perspective = cgmath::Perspective{
-            left: -2.0,
-            right: 2.0,
-            bottom: -1.5,
-            top: 1.5,
+            left: -10.0,
+            right: 10.0,
+            bottom: -10.0,
+            top: 10.0,
             near: 0.1,
-            far: 50.0,
+            far: 10000.0,
             };
-        self.scene.camera = Camera::new(Point3::new(0.0, 0.0, 1.0), Point3::new(0.0, 0.0, 0.0), Vector3::new(0.0, 1.0, 0.0));
+        self.scene.camera = Camera::new(Point3::new(0.0, 0.0, 9.0), Point3::new(0.0, 0.0, 0.0), Vector3::new(0.0, 1.0, 0.0));
         self.scene.camera.set_projection_matrix(cgmath::Matrix4::from(perspective));
         println!("Model Matrix: {:?}", self.scene.objects[0].get_model_matrix());
         println!("View Matrix: {:?}", self.scene.camera.get_view_matrix());
@@ -168,8 +168,8 @@ impl System for LogicSystem {
                     MsgContent::Input(InputMsg::KeyDown(key)) => {
                         use glium::glutin::VirtualKeyCode::*;
                         match key {
-                            Left => {println!("{:?}", self.scene.objects[0].get_model_matrix());self.scene.objects[0].rotate(Axis::Axis_y,-15.0);}
-                            Right => {}
+                            Left => {println!("{:?}", self.scene.objects[0].get_model_matrix());self.scene.objects[0].rotate(Axis::Axis_y,-5.0);}
+                            Right => {println!("{:?}", self.scene.objects[0].get_model_matrix());self.scene.objects[0].rotate(Axis::Axis_y,5.0);}
                             _ => {}
                         }
                     }
