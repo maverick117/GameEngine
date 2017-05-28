@@ -103,47 +103,56 @@ impl System for LogicSystem {
         use MsgContent::*;
         use model::ModelMsg::*;
         let light = Light {
-                position: cgmath::Point3::new(0.0, 1.0, 0.0),
-                ambient: cgmath::Vector3::new(1.0, 1.0, 1.0),
-                diffuse: cgmath::Vector3::new(1.0, 1.0, 1.0),
-                speculer: cgmath::Vector3::new(1.0, 1.0, 1.0),
+            position: cgmath::Point3::new(0.0, 1.0, 0.0),
+            ambient: cgmath::Vector3::new(1.0, 1.0, 1.0),
+            diffuse: cgmath::Vector3::new(1.0, 1.0, 1.0),
+            speculer: cgmath::Vector3::new(1.0, 1.0, 1.0),
         };
         let mut static_object_path: Vec<String> = Vec::new();
         static_object_path.push("assets/model/teapot.obj".to_string());
 
         for path in static_object_path {
-            let msg = Msg { content: Logic(LogicMsg::ModelReq(path.clone()))};
+            let msg = Msg { content: Logic(LogicMsg::ModelReq(path.clone())) };
             self.msg_tx[3].send(msg);
             println!("TRY TO RECV MSG...");
             if let Ok(msg) = self.msg_rx.recv() {
                 match msg.content {
                     Model(ObjectResult(Some(obj))) => {
                         self.scene.objects.push(obj);
-                    },
+                    }
                     Model(ObjectResult(None)) => unimplemented!(),
-                    c => {println!("{:?}", c);  },
+                    c => {
+                        println!("{:?}", c);
+                    }
                 }
             }
             println!("TRY TO RECV MSG... [FIN]");
         }
-        let perspective = cgmath::Perspective{
+        let perspective = cgmath::Perspective {
             left: -4.0,
             right: 4.0,
             bottom: -4.0,
             top: 4.0,
             near: 1.0,
             far: 20.0,
-            };
-        self.scene.camera = Camera::new(Point3::new(0.0, 0.0, 10.0), Point3::new(0.0, 0.0, 0.0), Vector3::new(0.0, 1.0, 0.0));
-        self.scene.camera.set_projection_matrix(cgmath::Matrix4::from(perspective));
-        println!("Model Matrix: {:?}", self.scene.objects[0].get_model_matrix());
+        };
+        self.scene.camera = Camera::new(Point3::new(0.0, 0.0, 10.0),
+                                        Point3::new(0.0, 0.0, 0.0),
+                                        Vector3::new(0.0, 1.0, 0.0));
+        self.scene
+            .camera
+            .set_projection_matrix(cgmath::Matrix4::from(perspective));
+        println!("Model Matrix: {:?}",
+                 self.scene.objects[0].get_model_matrix());
         println!("View Matrix: {:?}", self.scene.camera.get_view_matrix());
-        println!("Proj Matrix: {:?}", self.scene.camera.get_projection_matrix());
+        println!("Proj Matrix: {:?}",
+                 self.scene.camera.get_projection_matrix());
         println!("Logic System Initilized.")
     }
     fn main_loop(&mut self) {
         use MsgContent::*;
         let mut should_run = true;
+        let mut render_ready = true;
         while should_run {
             let mut cmd_queue = Vec::new();
             cmd_queue.push(self.msg_rx.recv().unwrap());
@@ -159,21 +168,40 @@ impl System for LogicSystem {
                 match m.content {
                     MsgContent::System(SystemMsg::SysHalt) => {
                         should_run = false;
-                    },
+                    }
                     MsgContent::Render(RenderMsg::RenderResult(r)) => {
                         if !r.is_some() {
                             println!("Recv msg from Renderer: Fail to render...");
                         }
+                        render_ready = true;
                     }
                     MsgContent::Input(InputMsg::KeyDown(key)) => {
                         use glium::glutin::VirtualKeyCode::*;
                         match key {
-                            Left => {println!("{:?}", self.scene.objects[0].get_model_matrix());self.scene.objects[0].rotate(Axis::Axis_y,-5.0);}
-                            Right => {println!("{:?}", self.scene.objects[0].get_model_matrix());self.scene.objects[0].rotate(Axis::Axis_y,5.0);}
-                            RBracket => {println!("{:?}",self.scene.camera);self.scene.camera.zoom(1.0);},
-                            LBracket => {println!("{:?}",self.scene.camera);self.scene.camera.zoom(-1.0);},
-                            W => {println!("{:?}",self.scene.camera);self.scene.camera.move_y(1.0);},
-                            S => {println!("{:?}",self.scene.camera);self.scene.camera.move_y(-1.0);},
+                            Left => {
+                                println!("{:?}", self.scene.objects[0].get_model_matrix());
+                                self.scene.objects[0].rotate(Axis::Axis_y, -5.0);
+                            }
+                            Right => {
+                                println!("{:?}", self.scene.objects[0].get_model_matrix());
+                                self.scene.objects[0].rotate(Axis::Axis_y, 5.0);
+                            }
+                            RBracket => {
+                                println!("{:?}",self.scene.camera);
+                                self.scene.camera.zoom(1.0);
+                            }
+                            LBracket => {
+                                println!("{:?}",self.scene.camera);
+                                self.scene.camera.zoom(-1.0);
+                            }
+                            W => {
+                                println!("{:?}",self.scene.camera);
+                                self.scene.camera.move_y(1.0);
+                            }
+                            S => {
+                                println!("{:?}",self.scene.camera);
+                                self.scene.camera.move_y(-1.0);
+                            }
                             _ => {}
                         }
                     }
@@ -181,9 +209,13 @@ impl System for LogicSystem {
                 }
             }
             // Pass to renderer
-            let msg = Msg { content: Logic(LogicMsg::SceneSnd(self.scene.clone()))};
-            self.msg_tx[1].send(msg);
-            println!("Logic Msg Sent!!!");
+            if render_ready {
+                let msg = Msg { content: Logic(LogicMsg::SceneSnd(self.scene.clone())) };
+                self.msg_tx[1].send(msg);
+                println!("Logic Msg Sent!!!");
+                render_ready = false;
+            }
+
         }
     }
 }
@@ -197,7 +229,11 @@ impl LogicSystem {
             mouse_y: 0,
             object_list: Vec::new(),
             selected_object_index: 0,
-            scene: Scene::new(Vec::new(), Vec::new(), Camera::new(Point3::new(0.0, 0.0, 1.0), Point3::new(0.0, 0.0, 0.0), Vector3::new(0.0, 1.0, 0.0))),
+            scene: Scene::new(Vec::new(),
+                              Vec::new(),
+                              Camera::new(Point3::new(0.0, 0.0, 1.0),
+                                          Point3::new(0.0, 0.0, 0.0),
+                                          Vector3::new(0.0, 1.0, 0.0))),
         }
     }
 

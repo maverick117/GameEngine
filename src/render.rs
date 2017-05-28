@@ -124,20 +124,29 @@ impl RenderSystem {
 
                     in vec3 position;
                     in vec3 normal;
+                    in vec3 color_diffuse;
+                    in vec4 color_specular;
 
                     out vec3 v_position;
                     out vec3 v_normal;
+                    out vec3 v_color_diffuse;
+                    out vec4 v_color_specular;
 
-                    void main() {
+                    void main() {{
                         v_position = position;
                         v_normal = normal;
+                        v_color_diffuse = color_diffuse;
+                        v_color_specular = color_specular;
                         gl_Position = proj_matrix * view_matrix * model_matrix * vec4(v_position, 1.0);
-                    }
+                    }}
                 ",
                 fragment: "
                     #version 330
+
                     in vec3 v_position;
                     in vec3 v_normal;
+                    in vec3 v_color_diffuse;
+                    in vec4 v_color_specular;
                     // to implement
                     void main() {
 
@@ -147,7 +156,7 @@ impl RenderSystem {
 
                         // ambient color
                         vec3 ambient = 0.1 * lightColor;
-                        
+
                         // diffuse color
                         vec3 norm = normalize(v_normal);
                         vec3 lightDir = normalize(lightPos - v_position);
@@ -162,77 +171,85 @@ impl RenderSystem {
             },
         ).unwrap();
 
+        #[derive(Copy, Clone, Debug)]
+        struct Vertex {
+            position: [f32; 3],
+            normal: [f32; 3],
+            color_diffuse: [f32; 3],
+            color_specular: [f32; 4],
+        }
+
+        implement_vertex!(Vertex, position, normal, color_diffuse, color_specular);
 
         for object in scene.objects {
+            let mut vertex_data: Vec<Vertex> = Vec::new();
             for model in &object.models {
                 let mesh = &model.mesh;
-                #[derive(Copy, Clone, Debug)]
-                struct Vertex {
-                    position: [f32; 3],
-                    normal: [f32; 3],
-                    texture: [f32; 2],
-                }
+                //let mut vertex_data = Vec::new();
 
-                implement_vertex!(Vertex, position, normal, texture);
+                for idx in &mesh.indices {
+                    let i = *idx as usize;
+                    let pos = [mesh.positions[3 * i],
+                               mesh.positions[3 * i + 1],
+                               mesh.positions[3 * i + 2]];
+                    let normal = if !mesh.normals.is_empty() {
+                        [mesh.normals[3 * i],
+                         mesh.normals[3 * i + 1],
+                         mesh.normals[3 * i + 2]]
+                    } else {
+                        [0.0, 0.0, 0.0]
+                    };
 
-                let mut vertex_data = Vec::new();
-                for i in &mesh.indices {
-                    let i = *i as usize;
-                    let mut normal: [f32; 3] = [0., 0., 0.];
-                    let mut texture: [f32; 2] = [0., 0.];
-                    let position = [mesh.positions[i * 3],
-                                    mesh.positions[i * 3 + 1],
-                                    mesh.positions[i * 3 + 2]];
-                    if !mesh.normals.is_empty() {
-                        // normal = [x, y, z]
-                        normal = [mesh.normals[i * 3],
-                                  mesh.normals[i * 3 + 1],
-                                  mesh.normals[i * 3 + 2]];
-                    }
-
-                    if !mesh.texcoords.is_empty() {
-                        // texcoord = [u, v];
-                        texture = [mesh.texcoords[i * 2], mesh.texcoords[i * 2 + 1]];
-                    }
+                    let (color_diffuse, color_specular) = match mesh.material_id {
+                        Some(i) => {
+                            (object.materials[i].diffuse,
+                             [object.materials[i].specular[0],
+                              object.materials[i].specular[1],
+                              object.materials[i].specular[2],
+                              object.materials[i].shininess])
+                        }
+                        None => ([0.8, 0.8, 0.8], [0.15, 0.15, 0.15, 15.0]),
+                    };
                     vertex_data.push(Vertex {
-                                         position: position,
+                                         position: pos,
                                          normal: normal,
-                                         texture: texture,
+                                         color_diffuse: color_diffuse,
+                                         color_specular: color_specular,
                                      });
                 }
-                let vertex_buffer = glium::vertex::VertexBuffer::new(&self.window, &vertex_data)
-                    .unwrap()
-                    .into_vertex_buffer_any();
-                //println!("{:?}", scene.camera.get_projection_matrix());
-                //println!("{:?}", scene.camera.get_view_matrix());
-                //println!("{:?}", object.get_model_matrix());
-
-                let uniforms = uniform! {
-                    proj_matrix: scene.camera.get_projection_matrix(),
-                    view_matrix: scene.camera.get_view_matrix(),
-                    model_matrix: object.get_model_matrix(),
-                };
-                // draw parameters
-                let params = glium::DrawParameters {
-                    depth: glium::Depth {
-                        test: glium::DepthTest::IfLess,
-                        write: true,
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                };
-
-                let mut target = self.window.draw();
-                target.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
-                target
-                    .draw(&vertex_buffer,
-                          &glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList),
-                          &program,
-                          &uniforms,
-                          &params)
-                    .unwrap();
-                target.finish().unwrap();
             }
+            let vertex_buffer = glium::vertex::VertexBuffer::new(&self.window, &vertex_data)
+                .unwrap()
+                .into_vertex_buffer_any();
+            //println!("{:?}", scene.camera.get_projection_matrix());
+            //println!("{:?}", scene.camera.get_view_matrix());
+            //println!("{:?}", object.get_model_matrix());
+
+            let uniforms = uniform! {
+                proj_matrix: scene.camera.get_projection_matrix(),
+                view_matrix: scene.camera.get_view_matrix(),
+                model_matrix: object.get_model_matrix(),
+            };
+            // draw parameters
+            let params = glium::DrawParameters {
+                depth: glium::Depth {
+                    test: glium::DepthTest::IfLess,
+                    write: true,
+                    ..Default::default()
+                },
+                ..Default::default()
+            };
+
+            let mut target = self.window.draw();
+            target.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
+            target
+                .draw(&vertex_buffer,
+                      &glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList),
+                      &program,
+                      &uniforms,
+                      &params)
+                .unwrap();
+            target.finish().unwrap();
         }
         Some(()) // TODO: None
     }
@@ -262,6 +279,7 @@ impl Camera {
     }
     pub fn get_view_matrix(&self) -> [[f32; 4]; 4] {
         use cgmath::Matrix;
+
         cgmath::Matrix4::look_at(self.eye, self.center, self.up).getArray()
     }
     pub fn get_projection_matrix(&self) -> [[f32; 4]; 4] {
@@ -273,11 +291,11 @@ impl Camera {
         self.projection_matrix = m.transpose().getArray();
     }
 
-    pub fn zoom(&mut self, dist:f32) {
+    pub fn zoom(&mut self, dist: f32) {
         self.eye.z += dist;
     }
 
-    pub fn move_y(&mut self, dist:f32) {
+    pub fn move_y(&mut self, dist: f32) {
         self.eye.y += dist;
     }
 }
