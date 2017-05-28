@@ -109,7 +109,7 @@ impl System for LogicSystem {
             speculer: cgmath::Vector3::new(1.0, 1.0, 1.0),
         };
         let mut static_object_path: Vec<String> = Vec::new();
-        static_object_path.push("assets/model/teapot.obj".to_string());
+        static_object_path.push("assets/model/Dassault_Mirage_V.obj".to_string());
 
         for path in static_object_path {
             let msg = Msg { content: Logic(LogicMsg::ModelReq(path.clone())) };
@@ -137,7 +137,7 @@ impl System for LogicSystem {
             far: 20.0,
         };
         let perspectivefov = cgmath::PerspectiveFov {
-            fovy: Rad(3.14159/3.0),
+            fovy: Rad(3.14159 / 3.0),
             aspect: 1.0,
             near: 1.0,
             far: 20.0,
