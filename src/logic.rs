@@ -123,7 +123,7 @@ impl System for LogicSystem {
             speculer: cgmath::Vector3::new(1.0, 1.0, 1.0),
         };
         let mut static_object_path: Vec<String> = Vec::new();
-        static_object_path.push("assets/model/teapot.obj".to_string());
+        static_object_path.push("assets/model/jet1.obj".to_string());
         //static_object_path.push("assets/model/cube.obj".to_string());
 
         for path in static_object_path {
@@ -246,6 +246,14 @@ impl System for LogicSystem {
                             S => {
                                 //println!("{:?}", self.scene.camera);
                                 //self.scene.camera.move_y(-1.0);
+                            }
+                            Esc => {
+                                should_run = false;
+                                for tx in &self.msg_tx {
+                                    tx.send(Msg {
+                                        content: MsgContent::System(SystemMsg::SysHalt),
+                                    });
+                                }
                             }
                             _ => {}
                         }
