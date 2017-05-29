@@ -174,7 +174,7 @@ impl System for LogicSystem {
     fn main_loop(&mut self) {
         use MsgContent::*;
         let mut should_run = true;
-        let mut render_ready = true;
+        let mut render_ready = false;
         while should_run {
             let mut cmd_queue = Vec::new();
             cmd_queue.push(self.msg_rx.recv().unwrap());

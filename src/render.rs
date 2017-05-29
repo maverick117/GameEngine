@@ -41,6 +41,9 @@ impl System for RenderSystem {
                 break;
             }
         }
+        use MsgContent::Render;
+        let render_msg = Msg { content: Render(RenderMsg::RenderResult(Some(()))) };
+        self.msg_tx[2].send(render_msg);
     }
     fn main_loop(&mut self) {
         let mut should_run = true;
