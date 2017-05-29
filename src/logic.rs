@@ -168,7 +168,8 @@ impl System for LogicSystem {
         println!("View Matrix: {:?}", self.scene.camera.get_view_matrix());
         println!("Proj Matrix: {:?}",
                  self.scene.camera.get_projection_matrix());
-        println!("Logic System Initilized.")
+        println!("Logic System Initilized.");
+        self.msg_tx[1].send(Msg { content: MsgContent::System(SystemMsg::SysInit) });
     }
     fn main_loop(&mut self) {
         use MsgContent::*;
