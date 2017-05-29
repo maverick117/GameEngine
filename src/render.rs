@@ -148,7 +148,7 @@ impl RenderSystem {
                     out float f_shininess;
 
                     void main() {{
-                        v_position = position;
+                        v_position = vec3(model_matrix * vec4(position, 1.0));
                         v_normal = vec3(model_matrix * vec4(normal, 0.0));
                         v_color_diffuse = color_diffuse;
                         v_color_specular = color_specular;
