@@ -123,8 +123,10 @@ impl System for LogicSystem {
             speculer: cgmath::Vector3::new(1.0, 1.0, 1.0),
         };
         let mut static_object_path: Vec<String> = Vec::new();
+
         static_object_path.push("assets/model/jet1.obj".to_string());
-        //static_object_path.push("assets/model/cube.obj".to_string());
+        static_object_path.push("assets/model/cube.obj".to_string());
+        //static_object_path.push("assets/model/teapot.obj".to_string());
 
         for path in static_object_path {
             let msg = Msg { content: Logic(LogicMsg::ModelReq(path.clone())) };
@@ -170,6 +172,7 @@ impl System for LogicSystem {
                  self.scene.camera.get_projection_matrix());
         println!("Logic System Initilized.");
         self.msg_tx[1].send(Msg { content: MsgContent::System(SystemMsg::SysInit) });
+        self.scene.objects[1].speed[1] = 0.01;
     }
     fn main_loop(&mut self) {
         use MsgContent::*;
@@ -251,8 +254,8 @@ impl System for LogicSystem {
                                 should_run = false;
                                 for tx in &self.msg_tx {
                                     tx.send(Msg {
-                                        content: MsgContent::System(SystemMsg::SysHalt),
-                                    });
+                                                content: MsgContent::System(SystemMsg::SysHalt),
+                                            });
                                 }
                             }
                             _ => {}

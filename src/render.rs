@@ -216,9 +216,10 @@ impl RenderSystem {
 
         implement_vertex!(Vertex, position, normal, color_diffuse, color_specular);
         let mut target = self.window.draw();
+        target.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
         let mut vertex_data: Vec<Vertex> = Vec::new();
         for object in scene.objects {
-
+            vertex_data.clear();
             for model in &object.models {
                 let mesh = &model.mesh;
                 //let mut vertex_data = Vec::new();
@@ -257,10 +258,6 @@ impl RenderSystem {
             let vertex_buffer = glium::vertex::VertexBuffer::new(&self.window, &vertex_data)
                 .unwrap()
                 .into_vertex_buffer_any();
-            //println!("{:?}", scene.camera.get_projection_matrix());
-            //println!("{:?}", scene.camera.get_view_matrix());
-            //println!("{:?}", object.get_model_matrix());
-
             let uniforms = uniform! {
                 proj_matrix: scene.camera.get_projection_matrix(),
                 view_matrix: scene.camera.get_view_matrix(),
@@ -278,7 +275,6 @@ impl RenderSystem {
             };
 
 
-            target.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
             target
                 .draw(&vertex_buffer,
                       &glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList),
@@ -288,20 +284,6 @@ impl RenderSystem {
                 .unwrap();
 
         }
-        /*
-        let text_system = glium_text::TextSystem::new(&self.window);
-        let font = glium_text::FontTexture::new(&self.window, std::fs::File::open(&std::path::Path::new("/usr/share/fonts/TTF/UbuntuMono-R.ttf")).unwrap(),24).unwrap();
-        let text = glium_text::TextDisplay::new(&text_system, &font, "Hello World!");
-        let matrix = [[1.0, 0.0, 0.0, 0.0],
-                      [0.0, 1.0, 0.0, 0.0],
-                      [0.0, 0.0, 1.0, 0.0],
-                      [0.0, 0.0, 0.0, 1.0]];
-        glium_text::draw(&text,
-                         &text_system,
-                         &mut self.window.draw(),
-                         matrix,
-                         (1.0, 1.0, 0.0, 1.0));
-                         */
         target.finish().unwrap();
         Some(()) // TODO: None
     }
