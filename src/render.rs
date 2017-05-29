@@ -33,6 +33,17 @@ impl System for RenderSystem {
         let mut target = self.window.draw();
         target.clear_color_and_depth((0.2, 0.2, 0.2, 0.0), 1.0);
         target.finish();
+        use MsgContent;
+        use SystemMsg;
+        loop {
+            if let Msg { content: MsgContent::System(SystemMsg::SysInit) } =
+                self.msg_rx.recv().unwrap() {
+                break;
+            }
+        }
+        use MsgContent::Render;
+        let render_msg = Msg { content: Render(RenderMsg::RenderResult(Some(()))) };
+        self.msg_tx[2].send(render_msg);
     }
     fn main_loop(&mut self) {
         let mut should_run = true;
