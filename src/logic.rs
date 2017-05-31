@@ -62,7 +62,7 @@ impl Object {
             materials: materials,
             translate_matrix: Matrix4::from_translation(Vector3::new(0.0, 0.0, 0.0)),
             rotate_matrix: Matrix4::from_angle_x(Rad(0.0)),
-            scale_matrix: Matrix4::from_scale(0.2),
+            scale_matrix: Matrix4::from_scale(0.6),
             path: path,
             speed: Vector3::new(0.0, 0.0, 0.0),
         }
@@ -192,6 +192,7 @@ impl System for LogicSystem {
                     .unwrap();
                 match m.content {
                     MsgContent::System(SystemMsg::SysHalt) => {
+                        println!("LOGIC Received SYSHALT");
                         should_run = false;
                     }
                     MsgContent::Render(RenderMsg::RenderResult(r)) => {
