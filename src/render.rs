@@ -15,6 +15,12 @@ use tool::*;
 use glium::Surface;
 // use glium_text;
 use std;
+use std::fs::File;
+use std::io::BufReader;
+use std::io::prelude::*;
+
+static window_width: u32 = 1000;
+static window_height: u32 = 1000;
 
 #[derive(Clone,Debug)]
 pub enum RenderMsg {
@@ -44,9 +50,123 @@ impl System for RenderSystem {
         use MsgContent::Render;
         let render_msg = Msg { content: Render(RenderMsg::RenderResult(Some(()))) };
         self.msg_tx[2].send(render_msg);
+
+
+
     }
     fn main_loop(&mut self) {
         let mut should_run = true;
+
+        // Read in vertex and fragment shaders from file
+        let mut pre_pass_vs = String::new();
+        let mut pre_pass_fs = String::new();
+        let mut lighting_vs = String::new();
+        let mut lighting_fs = String::new();
+        let mut composition_vs = String::new();
+        let mut composition_fs = String::new();
+
+        {
+            let file = File::open("shaders/pre_pass_program.vs").unwrap();
+            let mut buf_reader = BufReader::new(file);
+            buf_reader.read_to_string(&mut pre_pass_vs);
+        }
+
+        {
+            let file = File::open("shaders/pre_pass_program.fs").unwrap();
+            let mut buf_reader = BufReader::new(file);
+            buf_reader.read_to_string(&mut pre_pass_fs);
+        }
+        {
+            let file = File::open("shaders/lighting.vs").unwrap();
+            let mut buf_reader = BufReader::new(file);
+            buf_reader.read_to_string(&mut lighting_vs);
+        }
+
+        {
+            let file = File::open("shaders/lighting.fs").unwrap();
+            let mut buf_reader = BufReader::new(file);
+            buf_reader.read_to_string(&mut lighting_fs);
+        }
+        {
+            let file = File::open("shaders/composition.vs").unwrap();
+            let mut buf_reader = BufReader::new(file);
+            buf_reader.read_to_string(&mut composition_vs);
+        }
+
+        {
+            let file = File::open("shaders/composition.fs").unwrap();
+            let mut buf_reader = BufReader::new(file);
+            buf_reader.read_to_string(&mut composition_fs);
+        }
+
+        // Generate the shader programs
+        let pre_pass_program =
+            glium::Program::from_source(&self.window, &pre_pass_vs, &pre_pass_fs, None).unwrap();
+        let lighting_program =
+            glium::Program::from_source(&self.window, &lighting_vs, &lighting_fs, None).unwrap();
+        let composition_program =
+            glium::Program::from_source(&self.window, &composition_vs, &composition_fs, None)
+                .unwrap();
+
+        // Generate renderable textures for the scene
+        let texture1 = glium::texture::Texture2d::empty_with_format(
+            &self.window,
+            glium::texture::UncompressedFloatFormat::F32F32F32F32,
+            glium::texture::MipmapsOption::NoMipmap,
+            window_width,
+            window_height)
+            .unwrap();
+        let texture2 = glium::texture::Texture2d::empty_with_format(
+            &self.window,
+            glium::texture::UncompressedFloatFormat::F32F32F32F32,
+            glium::texture::MipmapsOption::NoMipmap,
+            window_width,
+            window_height)
+            .unwrap();
+        let texture3 = glium::texture::Texture2d::empty_with_format(
+            &self.window,
+            glium::texture::UncompressedFloatFormat::F32F32F32F32,
+            glium::texture::MipmapsOption::NoMipmap,
+            window_width,
+            window_height)
+            .unwrap();
+        let texture4 = glium::texture::Texture2d::empty_with_format(
+            &self.window,
+            glium::texture::UncompressedFloatFormat::F32F32F32F32,
+            glium::texture::MipmapsOption::NoMipmap,
+            window_width,
+            window_height)
+            .unwrap();
+        let depthtexture = glium::texture::DepthTexture2d::empty_with_format(
+            &self.window,
+            glium::texture::DepthFormat::F32,
+            glium::texture::MipmapsOption::NoMipmap,
+            window_width,
+            window_height)
+            .unwrap();
+
+        let output = &[("output1", &texture1),
+                       ("output2", &texture2),
+                       ("output3", &texture3),
+                       ("output4", &texture4)];
+
+        let mut framebuffer =
+            glium::framebuffer::MultiOutputFrameBuffer::with_depth_buffer(&self.window,
+                                                                          output.iter().cloned(),
+                                                                          &depthtexture)
+                    .unwrap();
+
+        let light_texture = glium::texture::Texture2d::empty_with_format(&self.window,
+            glium::texture::UncompressedFloatFormat::F32F32F32F32,
+            glium::texture::MipmapsOption::NoMipmap, window_width, window_height).unwrap();
+        let mut light_buffer =
+            glium::framebuffer::SimpleFrameBuffer::with_depth_buffer(&self.window,
+                                                                     &light_texture,
+                                                                     &depthtexture)
+                    .unwrap();
+
+
+        // Main loop
         while should_run {
             let event_list: Vec<Event> = self.window.poll_events().collect();
             for event in event_list {
@@ -98,7 +218,12 @@ impl System for RenderSystem {
                 match msg.content {
                     System(SysHalt) => should_run = false,
                     Logic(SceneSnd(scene)) => {
-                        let result = self.render(scene);
+                        let result = self.render(scene,
+                                                 &pre_pass_program,
+                                                 &lighting_program,
+                                                 &composition_program,
+                                                 &mut framebuffer,
+                                                 &mut light_buffer);
                         let render_msg = Msg { content: Render(RenderMsg::RenderResult(result)) };
                         self.msg_tx[2].send(render_msg);
                     }
@@ -117,7 +242,7 @@ impl RenderSystem {
         RenderSystem {
             window: glutin::WindowBuilder::new()
                 .with_title("Engine Demo".to_string())
-                .with_dimensions(1000, 1000)
+                .with_dimensions(window_width, window_height)
                 .with_vsync()
                 .with_depth_buffer(24)
                 .build_glium()
@@ -126,7 +251,18 @@ impl RenderSystem {
             msg_rx: msg_rx,
         }
     }
-    pub fn render(&mut self, scene: Scene) -> Option<()> {
+    pub fn render(&mut self,
+                  scene: Scene,
+                  pre_pass_program: &glium::Program,
+                  lighting_program: &glium::Program,
+                  composition_program: &glium::Program,
+                  framebuffer: &mut glium::framebuffer::MultiOutputFrameBuffer,
+                  light_buffer: &mut glium::framebuffer::SimpleFrameBuffer)
+                  -> Option<()> {
+
+        // Prevent program from going forward
+        //return Some(());
+
         let program = program!(&self.window,
             330 => {
                 vertex: "
