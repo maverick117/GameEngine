@@ -16,6 +16,6 @@ layout (location = 3) out vec4 gSpec;
 void main() {
     gPosition = frag_pos;
     gNormal = frag_norm;
-    gAlbedo = texture(tex, frag_texcoord) + vec4(frag_diffuse,1.0);
+    gAlbedo.rgb = texture(tex, frag_texcoord).rgb + frag_diffuse;
     gSpec = vec4(frag_specular,25.0);
 }

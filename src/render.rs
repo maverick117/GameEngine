@@ -155,10 +155,10 @@ impl System for RenderSystem {
             window_height)
             .unwrap();
 
-        let output = &[("output1", &texture1),
-                       ("output2", &texture2),
-                       ("output3", &texture3),
-                       ("output4", &texture4)];
+        let output = &[("gPosition", &texture1),
+                       ("gNormal", &texture2),
+                       ("gAlbedo", &texture3),
+                       ("gSpec", &texture4)];
 
         // The gBuffer
         let mut framebuffer =
@@ -400,14 +400,15 @@ impl RenderSystem {
 
         light_buffer.clear_color_and_depth((0.0, 0.0, 0.0, 0.0), 1.0);
 
+        // Get the eye position
+        let eye_position = [scene.camera.eye.x, scene.camera.eye.y, scene.camera.eye.z];
+
         for light in scene.lights {
             let light_uniforms = uniform!{
                 // TODO: uniforms to pass to the lighting pass
             };
         }
 
-        // Get the eye position
-        let eye_position = [scene.camera.eye.x, scene.camera.eye.y, scene.camera.eye.z];
 
 
         /*
