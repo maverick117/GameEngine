@@ -5,15 +5,17 @@ uniform sampler2D tex;
 in vec4 frag_pos;
 in vec4 frag_norm;
 in vec2 frag_texcoord;
+in vec3 frag_diffuse;
+in vec3 frag_specular;
 
-out vec4 output1;
-out vec4 output2;
-out vec4 output3;
-out vec4 output4;
+layout (location = 0) out vec4 gPosition;
+layout (location = 1) out vec4 gNormal;
+layout (location = 2) out vec4 gAlbedo;
+layout (location = 3) out vec4 gSpec;
 
 void main() {
-    output1 = frag_pos;
-    output2 = frag_norm;
-    output3 = texture(tex, frag_texcoord);
-    output4 = vec4(1.0, 0.0, 1.0, 1.0);
+    gPosition = frag_pos;
+    gNormal = frag_norm;
+    gAlbedo = texture(tex, frag_texcoord) + vec4(frag_diffuse,1.0);
+    gSpec = vec4(frag_specular,25.0);
 }

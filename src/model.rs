@@ -3,10 +3,13 @@ use tobj;
 use std::path::{Path, PathBuf};
 use std::sync::mpsc::*;
 use glium::vertex::VertexBufferAny;
+use std::collections::HashMap;
 use glium::glutin::Event;
+use image;
 use logic::Object;
 use System;
 use Msg;
+use std::io::Cursor;
 
 #[derive(Clone,Debug)]
 pub enum ModelMsg {
@@ -29,9 +32,16 @@ impl System for ModelSystem {
                 //println!("{:?}", entry);
                 let load_result = tobj::load_obj(&entry.path());
                 let (models, materials) = load_result.expect("Load object failed");
+                let mut textures = HashMap::new();
+                for m in &materials {
+                    let image = image::load(Cursor::new(m.ambient_texture.clone()), image::PNG)
+                        .unwrap()
+                        .to_rgba();
+                }
                 self.objects
                     .push(Object::new(models,
                                       materials,
+                                      textures,
                                       entry.path().into_os_string().into_string().unwrap()));
             }
         }

@@ -109,6 +109,8 @@ impl System for RenderSystem {
                 .unwrap();
 
         // Generate renderable textures for the scene
+
+        // Position
         let texture1 = glium::texture::Texture2d::empty_with_format(
             &self.window,
             glium::texture::UncompressedFloatFormat::F32F32F32F32,
@@ -116,6 +118,8 @@ impl System for RenderSystem {
             window_width,
             window_height)
             .unwrap();
+
+        // Normals
         let texture2 = glium::texture::Texture2d::empty_with_format(
             &self.window,
             glium::texture::UncompressedFloatFormat::F32F32F32F32,
@@ -123,6 +127,8 @@ impl System for RenderSystem {
             window_width,
             window_height)
             .unwrap();
+
+        // Albedo
         let texture3 = glium::texture::Texture2d::empty_with_format(
             &self.window,
             glium::texture::UncompressedFloatFormat::F32F32F32F32,
@@ -130,6 +136,8 @@ impl System for RenderSystem {
             window_width,
             window_height)
             .unwrap();
+
+        // Specular
         let texture4 = glium::texture::Texture2d::empty_with_format(
             &self.window,
             glium::texture::UncompressedFloatFormat::F32F32F32F32,
@@ -137,6 +145,8 @@ impl System for RenderSystem {
             window_width,
             window_height)
             .unwrap();
+
+        // Depth buffer
         let depthtexture = glium::texture::DepthTexture2d::empty_with_format(
             &self.window,
             glium::texture::DepthFormat::F32,
@@ -150,6 +160,7 @@ impl System for RenderSystem {
                        ("output3", &texture3),
                        ("output4", &texture4)];
 
+        // The gBuffer
         let mut framebuffer =
             glium::framebuffer::MultiOutputFrameBuffer::with_depth_buffer(&self.window,
                                                                           output.iter().cloned(),
@@ -159,6 +170,7 @@ impl System for RenderSystem {
         let light_texture = glium::texture::Texture2d::empty_with_format(&self.window,
             glium::texture::UncompressedFloatFormat::F32F32F32F32,
             glium::texture::MipmapsOption::NoMipmap, window_width, window_height).unwrap();
+
         let mut light_buffer =
             glium::framebuffer::SimpleFrameBuffer::with_depth_buffer(&self.window,
                                                                      &light_texture,
@@ -251,6 +263,7 @@ impl RenderSystem {
             msg_rx: msg_rx,
         }
     }
+
     pub fn render(&mut self,
                   scene: Scene,
                   pre_pass_program: &glium::Program,
@@ -260,117 +273,58 @@ impl RenderSystem {
                   light_buffer: &mut glium::framebuffer::SimpleFrameBuffer)
                   -> Option<()> {
 
-        // Prevent program from going forward
-        //return Some(());
-
-        let program = program!(&self.window,
-            330 => {
-                vertex: "
-                    #version 330
-                    uniform mat4 proj_matrix;
-                    uniform mat4 view_matrix;
-                    uniform mat4 model_matrix;
-
-                    in vec3 position;
-                    in vec3 normal;
-                    in vec3 color_diffuse;
-                    in vec3 color_specular;
-                    in float shininess;
-
-                    out vec3 v_position;
-                    out vec3 v_normal;
-                    out vec3 v_color_diffuse;
-                    out vec3 v_color_specular;
-                    out float f_shininess;
-
-                    void main() {{
-                        v_position = vec3(model_matrix * vec4(position, 1.0));
-                        v_normal = vec3(model_matrix * vec4(normal, 0.0));
-                        v_color_diffuse = color_diffuse;
-                        v_color_specular = color_specular;
-                        f_shininess = shininess;
-                        gl_Position = proj_matrix * view_matrix * model_matrix * vec4(v_position, 1.0);
-                    }}
-                ",
-                fragment: "
-                    #version 330
-                    uniform vec3 eyePos;
-
-                    in vec3 v_position;
-                    in vec3 v_normal;
-                    in vec3 v_color_diffuse;
-                    in vec3 v_color_specular;
-                    in float f_shininess;
-
-                    // to implement
-                    void main() {
-                        // TODO: set light as an input
-                        vec3 lightPos = vec3(0.0, 0.0, 10.0);
-                        vec3 lightColor = vec3(1.0, 1.0, 1.0);
-                        vec3 tempcolor = vec3(0.4, 0.3, 0.05);
-                        vec3 color = vec3(0.0);
-
-                        vec3 norm = normalize(v_normal);
-                        if (dot(norm, norm) < 0.00001) {
-                            norm = normalize(cross(dFdx(v_position), dFdy(v_position)));
-                        }
-
-                        // ambient color
-                        vec3 ambient = 0.1 * tempcolor;
-
-                        // diffuse color
-                        vec3 lightDir = normalize(lightPos - v_position);
-
-                        float n_dot_l = max(dot(norm, lightDir), 0.0);
-                        vec3 diffuse = 0.9 * n_dot_l * tempcolor;//v_color_diffuse;
-                        // vec3 diffuse = 0.9 * n_dot_l * v_color_diffuse;
-
-                        // specular color
-                        vec3 viewDir = normalize(eyePos - v_position);
-                        vec3 half_vec = normalize(lightDir + viewDir);
-
-                        float n_dot_h = max(dot(norm, lightDir), 0.0);
-                        // vec3 specular = 0.5 * pow(n_dot_h, f_shininess) * v_color_specular.rgb;
-                        vec3 specular = 0.5 * pow(n_dot_h, 100) * lightColor;
-
-
-                        color = ambient + diffuse + specular;
-                        gl_FragColor = vec4(color, 1.0f);
-
-                    }
-                ",
-            },
-        ).unwrap();
-
         #[derive(Copy, Clone, Debug)]
         struct Vertex {
             position: [f32; 3],
             normal: [f32; 3],
             color_diffuse: [f32; 3],
             color_specular: [f32; 4],
+            texcoord: [f32; 2],
         }
 
-        implement_vertex!(Vertex, position, normal, color_diffuse, color_specular);
-        let mut target = self.window.draw();
-        target.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
-        let mut vertex_data: Vec<Vertex> = Vec::new();
-        for object in scene.objects {
-            vertex_data.clear();
-            for model in &object.models {
-                let mesh = &model.mesh;
-                //let mut vertex_data = Vec::new();
+        implement_vertex!(Vertex,
+                          position,
+                          normal,
+                          color_diffuse,
+                          color_specular,
+                          texcoord);
 
+        let mut target = self.window.draw();
+        // Equivalent to glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        target.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
+
+        // TODO: Retrieve texture info from each model
+
+        // Single pass on all objects
+        let mut vertex_data: Vec<Vertex> = Vec::new();
+        let mut index_data: Vec<u32> = Vec::new();
+        framebuffer.clear_color_and_depth((0.0, 0.0, 0.0, 0.0), 1.0);
+        for object in scene.objects {
+            for model in &object.models {
+                vertex_data.clear(); // Clear out vertex data from previous pass
+                index_data.clear(); // Clear out index data from the previous pass
+                let mesh = &model.mesh;
                 for idx in &mesh.indices {
+                    // For triangle indices
                     let i = *idx as usize;
+                    index_data.push(i as u32);
+                    // Get the vertice positions
                     let pos = [mesh.positions[3 * i],
                                mesh.positions[3 * i + 1],
                                mesh.positions[3 * i + 2]];
+                    // And the normals
                     let normal = if !mesh.normals.is_empty() {
                         [mesh.normals[3 * i],
                          mesh.normals[3 * i + 1],
                          mesh.normals[3 * i + 2]]
                     } else {
                         [0.0, 0.0, 0.0]
+                    };
+                    // And the texcoords
+                    let texcoord = if !mesh.texcoords.is_empty() {
+                        [mesh.texcoords[i * 2], mesh.texcoords[i * 2 + 1]]
+                    } else {
+                        [0.0, 0.0]
                     };
 
                     let (color_diffuse, color_specular) = match mesh.material_id {
@@ -388,38 +342,82 @@ impl RenderSystem {
                                          normal: normal,
                                          color_diffuse: color_diffuse,
                                          color_specular: color_specular,
+                                         texcoord: texcoord,
                                      });
                 }
+                // Draw for each model
+                let pre_pass_vertex_buffer = glium::VertexBuffer::new(&self.window, &vertex_data)
+                    .unwrap();
+
+                use glium::index::PrimitiveType;
+                let pre_pass_index_buffer = glium::IndexBuffer::new(&self.window,
+                                                                    PrimitiveType::TrianglesList,
+                                                                    &index_data)
+                        .unwrap();
+
+                // TODO: Modify uniforms to comply with shader profiles
+
+                let uniforms = uniform! {
+                    proj_matrix: scene.camera.get_projection_matrix(),
+                    view_matrix: scene.camera.get_view_matrix(),
+                    model_matrix: object.get_model_matrix(),
+                    // TODO: Add texture in here
+                    //position: [scene.camera.eye.x, scene.camera.eye.y, scene.camera.eye.z],
+                };
+
+                // Draw to gBuffer
+                framebuffer
+                    .draw(&pre_pass_vertex_buffer,
+                          &pre_pass_index_buffer,
+                          pre_pass_program,
+                          &uniforms,
+                          &Default::default())
+                    .unwrap();
             }
-            let vertex_buffer = glium::vertex::VertexBuffer::new(&self.window, &vertex_data)
-                .unwrap()
-                .into_vertex_buffer_any();
-            let uniforms = uniform! {
-                proj_matrix: scene.camera.get_projection_matrix(),
-                view_matrix: scene.camera.get_view_matrix(),
-                model_matrix: object.get_model_matrix(),
-                eyePos: [scene.camera.eye.x, scene.camera.eye.y, scene.camera.eye.z],
-            };
-            // draw parameters
-            let params = glium::DrawParameters {
-                depth: glium::Depth {
-                    test: glium::DepthTest::IfLess,
-                    write: true,
-                    ..Default::default()
-                },
-                ..Default::default()
-            };
-
-
-            target
-                .draw(&vertex_buffer,
-                      &glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList),
-                      &program,
-                      &uniforms,
-                      &params)
-                .unwrap();
-
         }
+
+
+        // Shading Passes
+        let params = glium::DrawParameters {
+            depth: glium::Depth {
+                test: glium::DepthTest::IfLess,
+                write: true,
+                ..Default::default()
+            },
+            blend: glium::Blend {
+                color: glium::BlendingFunction::Addition {
+                    source: glium::LinearBlendingFactor::One,
+                    destination: glium::LinearBlendingFactor::One,
+                },
+                alpha: glium::BlendingFunction::Addition {
+                    source: glium::LinearBlendingFactor::One,
+                    destination: glium::LinearBlendingFactor::One,
+                },
+                constant_value: (1.0, 1.0, 1.0, 1.0),
+            },
+            ..Default::default()
+        };
+
+        light_buffer.clear_color_and_depth((0.0, 0.0, 0.0, 0.0), 1.0);
+
+        for light in scene.lights {
+            let light_uniforms = uniform!{
+                // TODO: uniforms to pass to the lighting pass
+            };
+        }
+
+        // Get the eye position
+        let eye_position = [scene.camera.eye.x, scene.camera.eye.y, scene.camera.eye.z];
+
+
+        /*
+        target.draw(&vertex_buffer,
+                    &glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList),
+                    &program,
+                    &uniforms,
+                    &params)
+                    .unwrap();
+        */
         target.finish().unwrap();
         Some(()) // TODO: None
     }

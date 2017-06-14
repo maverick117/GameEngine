@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate glium;
 extern crate baal;
+extern crate image;
 extern crate tobj;
 extern crate cgmath;
 extern crate glium_text;

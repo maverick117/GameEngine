@@ -27,17 +27,9 @@ impl fmt::Debug for LogicMsg {
     }
 }
 
-#[derive(Clone, Debug)]
-pub struct Light {
-    // Deprecated
-    position: cgmath::Point3<f32>,
-    ambient: cgmath::Vector3<f32>,
-    diffuse: cgmath::Vector3<f32>,
-    specular: cgmath::Vector3<f32>,
-}
 
 #[derive(Clone, Debug)]
-pub struct aLight {
+pub struct Light {
     position: [f32; 4],
     color: [f32; 3],
     attenuation: [f32; 3],
@@ -52,10 +44,11 @@ enum Axis {
     Axis_any(Vector3<f32>),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Object {
     pub models: Vec<Model>,
     pub materials: Vec<Material>,
+    pub textures: HashMap<String, image::DynamicImage>,
     translate_matrix: Matrix4<f32>,
     rotate_matrix: Matrix4<f32>,
     scale_matrix: Matrix4<f32>,
@@ -64,11 +57,42 @@ pub struct Object {
     pub speed: Vector3<f32>,
 }
 
+impl fmt::Debug for Object {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f,
+               "Object {{
+            \tmodels: {:?},
+            \tmaterials: {:?},
+            \ttextures: {:?},
+            \ttranslate_matrix: {:?},
+            \trotate_matrix: {:?},
+            \tscale_matrix: {:?},
+            \tpath: {:?},
+            \tspeed: {:?},
+             }}",
+               self.models,
+               self.materials,
+               self.textures.iter().map(|(x,y)| {x.clone()}).collect::<String>(),//.iter().map|(x,y) {x}|.collect(),
+               self.translate_matrix,
+               self.rotate_matrix,
+               self.scale_matrix,
+               self.path,
+               self.speed,
+           )
+    }
+}
+
+
 impl Object {
-    pub fn new(models: Vec<Model>, materials: Vec<Material>, path: String) -> Object {
+    pub fn new(models: Vec<Model>,
+               materials: Vec<Material>,
+               textures: HashMap<String, image::DynamicImage>,
+               path: String)
+               -> Object {
         Object {
             models: models,
             materials: materials,
+            textures: textures,
             translate_matrix: Matrix4::from_translation(Vector3::new(0.0, 0.0, 0.0)),
             rotate_matrix: Matrix4::from_angle_x(Rad(0.0)),
             scale_matrix: Matrix4::from_scale(0.6),
@@ -126,10 +150,10 @@ impl System for LogicSystem {
         use MsgContent::*;
         use model::ModelMsg::*;
         let light = Light {
-            position: cgmath::Point3::new(0.0, 1.0, 0.0),
-            ambient: cgmath::Vector3::new(1.0, 1.0, 1.0),
-            diffuse: cgmath::Vector3::new(1.0, 1.0, 1.0),
-            specular: cgmath::Vector3::new(1.0, 1.0, 1.0),
+            position: [0.0, 1.0, 0.0, 1.0],
+            color: [1.0, 1.0, 1.0],
+            attenuation: [1.0, 0.5, 0.5],
+            radius: 1.0,
         };
         let mut static_object_path: Vec<String> = Vec::new();
 
