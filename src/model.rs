@@ -23,6 +23,15 @@ pub struct ModelSystem {
     //model_path: PathBuf,
 }
 
+#[derive(Clone)]
+pub struct TextureImages {
+    ambient_image: image::RgbaImage,
+    diffuse_image: image::RgbaImage,
+    specular_image: image::RgbaImage,
+    normal_image: image::RgbaImage,
+    dissolve_image: image::RgbaImage,
+}
+
 impl System for ModelSystem {
     fn init(&mut self) {
         println!("Loading models");
@@ -34,9 +43,34 @@ impl System for ModelSystem {
                 let (models, materials) = load_result.expect("Load object failed");
                 let mut textures = HashMap::new();
                 for m in &materials {
-                    let image = image::load(Cursor::new(m.ambient_texture.clone()), image::PNG)
-                        .unwrap()
-                        .to_rgba();
+                    let ambient_image = image::load(Cursor::new(m.ambient_texture.clone()),
+                                                    image::PNG)
+                            .unwrap()
+                            .to_rgba();
+                    let diffuse_image = image::load(Cursor::new(m.diffuse_texture.clone()),
+                                                    image::PNG)
+                            .unwrap()
+                            .to_rgba();
+                    let specular_image = image::load(Cursor::new(m.specular_texture.clone()),
+                                                     image::PNG)
+                            .unwrap()
+                            .to_rgba();
+                    let normal_image = image::load(Cursor::new(m.normal_texture.clone()),
+                                                   image::PNG)
+                            .unwrap()
+                            .to_rgba();
+                    let dissolve_image = image::load(Cursor::new(m.dissolve_texture.clone()),
+                                                     image::PNG)
+                            .unwrap()
+                            .to_rgba();
+                    textures.insert(m.name.clone(),
+                                    TextureImages {
+                                        ambient_image: ambient_image,
+                                        diffuse_image: diffuse_image,
+                                        specular_image: specular_image,
+                                        normal_image: normal_image,
+                                        dissolve_image: dissolve_image,
+                                    });
                 }
                 self.objects
                     .push(Object::new(models,

@@ -48,7 +48,7 @@ enum Axis {
 pub struct Object {
     pub models: Vec<Model>,
     pub materials: Vec<Material>,
-    pub textures: HashMap<String, image::DynamicImage>,
+    pub textures: HashMap<String, TextureImages>,
     translate_matrix: Matrix4<f32>,
     rotate_matrix: Matrix4<f32>,
     scale_matrix: Matrix4<f32>,
@@ -86,7 +86,7 @@ impl fmt::Debug for Object {
 impl Object {
     pub fn new(models: Vec<Model>,
                materials: Vec<Material>,
-               textures: HashMap<String, image::DynamicImage>,
+               textures: HashMap<String, TextureImages>,
                path: String)
                -> Object {
         Object {
