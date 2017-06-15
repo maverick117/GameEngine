@@ -44,6 +44,11 @@ enum Axis {
     Axis_any(Vector3<f32>),
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum LifeTime {
+    Infinity,
+    Time(f32),
+}
 #[derive(Clone)]
 pub struct Object {
     pub models: Vec<Model>,
@@ -55,6 +60,7 @@ pub struct Object {
     // model_transform_matrix: [[f32; 4]; 4],
     pub path: String,
     pub speed: Vector3<f32>,
+    pub lifetime: LifeTime,
 }
 
 impl fmt::Debug for Object {
@@ -87,7 +93,8 @@ impl Object {
     pub fn new(models: Vec<Model>,
                materials: Vec<Material>,
                textures: HashMap<String, TextureImages>,
-               path: String)
+               path: String,
+               lifetime: LifeTime)
                -> Object {
         Object {
             models: models,
@@ -98,6 +105,7 @@ impl Object {
             scale_matrix: Matrix4::from_scale(0.6),
             path: path,
             speed: Vector3::new(0.0, 0.0, 0.0),
+            lifetime: lifetime,
         }
     }
 
@@ -110,7 +118,7 @@ impl Object {
 
     }
 
-    fn translate(&mut self, dx: f32, dy: f32, dz: f32) {
+    pub fn translate(&mut self, dx: f32, dy: f32, dz: f32) {
         self.translate_matrix = Matrix4::from_translation(Vector3::new(dx, dy, dz)) *
                                 self.translate_matrix;
     }
@@ -130,6 +138,13 @@ impl Object {
         let result = self.translate_matrix * self.scale_matrix * self.rotate_matrix;
         // self.model_transform_matrix = result.getArray();
         result.getArray()
+    }
+
+    pub fn get_position(&self) -> [f32; 3] {
+        let xpos = self.translate_matrix[3][0];
+        let ypos = self.translate_matrix[3][1];
+        let zpos = self.translate_matrix[3][2];
+        [xpos, ypos, zpos]
     }
 }
 
@@ -224,6 +239,9 @@ impl System for LogicSystem {
         while should_run {
             let mut cmd_queue = Vec::new();
             cmd_queue.push(self.msg_rx.recv().unwrap());
+
+            // TODO: Do lifetime checks
+
             while let Ok(msg) = self.msg_rx.try_recv() {
                 cmd_queue.push(msg);
             }
@@ -276,7 +294,33 @@ impl System for LogicSystem {
                                 self.scene.objects[0].speed[1] = -0.1;
                             }
                             Space => {
-                                println!("Shoot!");
+                                //println!("Shoot!");
+                                let obj_path = "assets/model/cube.obj".to_string();
+                                let msg =
+                                    Msg { content: Logic(LogicMsg::ModelReq(obj_path.clone())) };
+                                use model::ModelMsg::ObjectResult;
+                                self.msg_tx[3].send(msg);
+                                //println!("TRY TO RECV MSG...");
+                                if let Ok(msg) = self.msg_rx.recv() {
+                                    match msg.content {
+                                        Model(ObjectResult(Some(mut obj))) => {
+                                            obj.lifetime = LifeTime::Time(5.0);
+                                            obj.speed[1] = 0.4;
+                                            {
+                                                let main_obj: &Object = &self.scene.objects[0];
+                                                let main_pos = main_obj.get_position();
+                                                obj.translate(main_pos[0],
+                                                              main_pos[1],
+                                                              main_pos[2]);
+                                            }
+                                            self.scene.objects.push(obj);
+                                        }
+                                        Model(ObjectResult(None)) => unimplemented!(),
+                                        c => {
+                                            println!("{:?}", c);
+                                        }
+                                    }
+                                }
                             }
                             RBracket => {
                                 //println!("{:?}", self.scene.camera);

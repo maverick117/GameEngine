@@ -6,7 +6,7 @@ use glium::vertex::VertexBufferAny;
 use std::collections::HashMap;
 use glium::glutin::Event;
 use image;
-use logic::Object;
+use logic::{Object, LifeTime};
 use System;
 use Msg;
 use std::io::Cursor;
@@ -76,7 +76,8 @@ impl System for ModelSystem {
                     .push(Object::new(models,
                                       materials,
                                       textures,
-                                      entry.path().into_os_string().into_string().unwrap()));
+                                      entry.path().into_os_string().into_string().unwrap(),
+                                      LifeTime::Infinity));
             }
         }
         // println!("Model load finished. Objects: {:?}", self.objects);

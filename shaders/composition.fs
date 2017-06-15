@@ -29,7 +29,7 @@ void main(){
   vec4 lighting_data = texture(lighting_texture, frag_texcoord);
 
   if(albedo.a == 1.0){
-    frag_output.rgb = albedo_color.rgb * 0.5;
+    frag_output.rgb = albedo_color.rgb * 0.2;
     frag_output.rgb += albedo_color.rgb * lighting_data.xyz;
     frag_output.rgb += specular_color.rgb * lighting_data.w;
     frag_output.a = 1.0;
