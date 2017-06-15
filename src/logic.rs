@@ -155,6 +155,7 @@ impl System for LogicSystem {
             attenuation: [1.0, 0.5, 0.5],
             radius: 1.0,
         };
+        self.scene.lights.push(light);
         let mut static_object_path: Vec<String> = Vec::new();
 
         static_object_path.push("assets/model/jet1.obj".to_string());
@@ -206,6 +207,15 @@ impl System for LogicSystem {
         println!("Logic System Initilized.");
         self.msg_tx[1].send(Msg { content: MsgContent::System(SystemMsg::SysInit) });
         self.scene.objects[1].speed[1] = 0.01;
+
+        let skybox = Skybox::new(String::from("assets/skybox/posx.jpg"),
+                                 String::from("assets/skybox/posy.jpg"),
+                                 String::from("assets/skybox/posz.jpg"),
+                                 String::from("assets/skybox/negx.jpg"),
+                                 String::from("assets/skybox/negy.jpg"),
+                                 String::from("assets/skybox/negz.jpg"));
+        self.scene.skybox = Some(skybox);
+
     }
     fn main_loop(&mut self) {
         use MsgContent::*;
@@ -323,7 +333,8 @@ impl LogicSystem {
                               Vec::new(),
                               Camera::new(Point3::new(0.0, 0.0, 1.0),
                                           Point3::new(0.0, 0.0, 0.0),
-                                          Vector3::new(0.0, 1.0, 0.0))),
+                                          Vector3::new(0.0, 1.0, 0.0)),
+                              None),
             player_to_model_mapping: HashMap::new(),
         }
     }

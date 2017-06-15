@@ -1,0 +1,9 @@
+newmtl plane
+Ka 0.117647 0.117647 0.117647
+Kd 1 1 1
+Ks 0.752941 0.752941 0.752941
+illum 2
+Ns 8
+map_Kd Dassault_Mirage_V_P01.png
+map_bump Dassault_Mirage_V_N.png
+

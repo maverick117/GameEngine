@@ -499,8 +499,7 @@ impl RenderSystem {
             };
             light_buffer
                 .draw(&quad_vertex_buffer,
-                      //&quad_index_buffer,
-                      &glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList),
+                      &quad_index_buffer,
                       lighting_program,
                       &light_uniforms,
                       &Default::default())
@@ -580,20 +579,51 @@ impl Camera {
     }
 }
 
+use image;
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
+pub struct Skybox {
+    positive_x: image::RgbaImage,
+    positive_y: image::RgbaImage,
+    positive_z: image::RgbaImage,
+    negative_x: image::RgbaImage,
+    negative_y: image::RgbaImage,
+    negative_z: image::RgbaImage,
+}
+
+impl Skybox {
+    pub fn new(px: String, py: String, pz: String, nx: String, ny: String, nz: String) -> Skybox {
+        use std::io::Cursor;
+        Skybox {
+            positive_x: image::open(px.clone()).unwrap().to_rgba(),
+            positive_y: image::open(py.clone()).unwrap().to_rgba(),
+            positive_z: image::open(pz.clone()).unwrap().to_rgba(),
+            negative_x: image::open(nx.clone()).unwrap().to_rgba(),
+            negative_y: image::open(ny.clone()).unwrap().to_rgba(),
+            negative_z: image::open(nz.clone()).unwrap().to_rgba(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct Scene {
     pub objects: Vec<Object>,
     pub lights: Vec<Light>,
     pub camera: Camera,
+    pub skybox: Option<Skybox>,
 }
 
 impl Scene {
-    pub fn new(objects: Vec<Object>, lights: Vec<Light>, camera: Camera) -> Scene {
+    pub fn new(objects: Vec<Object>,
+               lights: Vec<Light>,
+               camera: Camera,
+               skybox: Option<Skybox>)
+               -> Scene {
         Scene {
             objects: objects,
             lights: lights,
             camera: camera,
+            skybox: skybox,
         }
     }
 }
