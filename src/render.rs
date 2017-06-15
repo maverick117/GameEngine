@@ -171,10 +171,14 @@ impl System for RenderSystem {
             glium::texture::UncompressedFloatFormat::F32F32F32F32,
             glium::texture::MipmapsOption::NoMipmap, window_width, window_height).unwrap();
 
+        let light_output = &[("light_output", &light_texture)];
+
         let mut light_buffer =
-            glium::framebuffer::SimpleFrameBuffer::with_depth_buffer(&self.window,
-                                                                     &light_texture,
-                                                                     &depthtexture)
+            glium::framebuffer::MultiOutputFrameBuffer::with_depth_buffer(&self.window,
+                                                                          light_output
+                                                                              .iter()
+                                                                              .cloned(),
+                                                                          &depthtexture)
                     .unwrap();
 
 
@@ -275,7 +279,7 @@ impl RenderSystem {
                   lighting_program: &glium::Program,
                   composition_program: &glium::Program,
                   framebuffer: &mut glium::framebuffer::MultiOutputFrameBuffer,
-                  light_buffer: &mut glium::framebuffer::SimpleFrameBuffer,
+                  light_buffer: &mut glium::framebuffer::MultiOutputFrameBuffer,
                   texture1: &glium::texture::Texture2d,
                   texture2: &glium::texture::Texture2d,
                   texture3: &glium::texture::Texture2d,
@@ -495,7 +499,8 @@ impl RenderSystem {
             };
             light_buffer
                 .draw(&quad_vertex_buffer,
-                      &quad_index_buffer,
+                      //&quad_index_buffer,
+                      &glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList),
                       lighting_program,
                       &light_uniforms,
                       &Default::default())
@@ -505,6 +510,8 @@ impl RenderSystem {
         // Composition Pass
 
         let comp_uniforms = uniform!{
+            position_texture: texture1,
+            normal_texture: texture2,
             albedo_texture: texture3,
             specular_texture: texture4,
             lighting_texture: light_texture,
