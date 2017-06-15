@@ -478,7 +478,7 @@ impl RenderSystem {
                 },
                 constant_value: (1.0, 1.0, 1.0, 1.0),
             },
-            multisampling: true,
+            backface_culling: glium::draw_parameters::BackfaceCullingMode::CullingDisabled,
             ..Default::default()
         };
 

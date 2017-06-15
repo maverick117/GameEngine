@@ -1,7 +1,7 @@
 #version 330
 
-uniform vec4 eyePos;
-uniform vec3 lightPos;
+uniform vec3 eyePos;
+uniform vec4 lightPos;
 uniform vec3 lightColor;
 uniform vec3 attenuation;
 uniform float radius;
@@ -16,13 +16,11 @@ layout (location = 0) out vec4 light_output;
 void main() {
   vec3 fragPos = texture(gPosition, frag_texcoord).xyz;
   vec3 fragNorm = texture(gNormal, frag_texcoord).xyz;
-  vec3 fragToLight = lightPos - fragPos;
+  vec3 fragToLight = lightPos.xyz - fragPos;
   vec3 fragToEye = eyePos.xyz - fragPos;
   float diffuse_coefficient = max(dot(normalize(fragNorm), normalize(fragToLight)),0.0);
   float specular_coefficient = dot(normalize(normalize(fragToEye) + normalize(fragToLight)), normalize(fragNorm));
-  //frag_output.rgb = lightColor ;//* diffuse_coefficient;
-
-  //frag_output.a = specular_coefficient;
-  light_output.rgb = vec3(1.0,1.0,1.0);
-  light_output.a = 1.0;
+  light_output.rgb = lightColor.rgb * diffuse_coefficient;
+  light_output.a = specular_coefficient;
+  //light_output = vec4(.5,.5,.5,.5);
 }

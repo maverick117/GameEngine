@@ -193,7 +193,7 @@ impl System for LogicSystem {
             near: 1.0,
             far: 20.0,
         };
-        self.scene.camera = Camera::new(Point3::new(0.0, 0.0, 20.0),
+        self.scene.camera = Camera::new(Point3::new(0.0, 0.0, 15.0),
                                         Point3::new(0.0, 0.0, 0.0),
                                         Vector3::new(0.0, 1.0, 0.0));
         self.scene
@@ -207,7 +207,7 @@ impl System for LogicSystem {
         println!("Logic System Initilized.");
         self.msg_tx[1].send(Msg { content: MsgContent::System(SystemMsg::SysInit) });
         self.scene.objects[1].speed[1] = 0.01;
-
+        /*
         let skybox = Skybox::new(String::from("assets/skybox/posx.jpg"),
                                  String::from("assets/skybox/posy.jpg"),
                                  String::from("assets/skybox/posz.jpg"),
@@ -215,7 +215,7 @@ impl System for LogicSystem {
                                  String::from("assets/skybox/negy.jpg"),
                                  String::from("assets/skybox/negz.jpg"));
         self.scene.skybox = Some(skybox);
-
+*/
     }
     fn main_loop(&mut self) {
         use MsgContent::*;

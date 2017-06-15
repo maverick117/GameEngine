@@ -17,8 +17,14 @@ void main(){
   vec3 albedo_color = texture(albedo_texture, frag_texcoord).rgb;
   vec3 specular_color = texture(specular_texture, frag_texcoord).rgb;
   vec4 lighting_data = texture(lighting_texture, frag_texcoord);
-  frag_output = lighting_data;
-  //frag_output = vec4(normal_color.xyz,1.0);
+
+  frag_output.rgb = albedo_color.rgb * 0.5;
+  frag_output.rgb += albedo_color.rgb * lighting_data.xyz;
+  frag_output.rgb += specular_color.rgb * lighting_data.w;
+  frag_output.a = 1.0;
+
+  //frag_output = lighting_data;
+  //frag_output = vec4(albedo_color.xyz,1.0);
 
 
 
