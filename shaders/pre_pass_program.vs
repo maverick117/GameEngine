@@ -21,14 +21,12 @@ out vec3 frag_specular;
 void main() {
     // World coordinates of position
     frag_pos = model_matrix * vec4(position, 1.0);
-
     // Normal Vector in world coordinate
     frag_norm = transpose(inverse(model_matrix)) * vec4(normal, 1.0);
-
     frag_texcoord = texcoord;
-
     frag_shininess = shininess;
-
+    frag_specular = color_specular;
+    frag_diffuse = color_diffuse;
     gl_Position = proj_matrix * view_matrix * model_matrix * vec4(position,1.0);
 
 }

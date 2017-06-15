@@ -490,7 +490,7 @@ impl RenderSystem {
         // Composition Pass
 
         let comp_uniforms = uniform!{
-            decal_texture: texture1,
+            decal_texture: texture4,
         };
 
         target.clear_color(0.0, 0.0, 0.0, 0.0);
