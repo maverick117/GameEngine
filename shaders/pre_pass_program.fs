@@ -22,5 +22,6 @@ void main() {
     gPosition = frag_pos;
     gNormal = frag_norm;
     gAlbedo.rgb = texture(diffuse_tex, frag_texcoord).rgb + frag_diffuse;
+    gAlbedo.a = 1.0;
     gSpec = vec4(frag_specular, 1.0);
 }
