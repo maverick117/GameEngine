@@ -5,6 +5,7 @@ extern crate image;
 extern crate tobj;
 extern crate cgmath;
 extern crate glium_text;
+extern crate triple_buffer;
 
 mod console;
 mod render;

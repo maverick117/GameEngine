@@ -181,6 +181,26 @@ impl System for RenderSystem {
                                                                           &depthtexture)
                     .unwrap();
 
+        // Load the skybox textures
+        let skybox = Skybox::new(String::from("assets/skybox/posx.jpg"),
+                                 String::from("assets/skybox/posy.jpg"),
+                                 String::from("assets/skybox/posz.jpg"),
+                                 String::from("assets/skybox/negx.jpg"),
+                                 String::from("assets/skybox/negy.jpg"),
+                                 String::from("assets/skybox/negz.jpg"));
+
+        let dim = skybox.positive_x.dimensions();
+        let skybox_px_tex = glium::texture::Texture2d::new(&self.window, glium::texture::RawImage2d::from_raw_rgba_reversed(skybox.positive_x.clone().into_raw(),dim)).unwrap();
+        let dim = skybox.positive_y.dimensions();
+        let skybox_py_tex = glium::texture::Texture2d::new(&self.window, glium::texture::RawImage2d::from_raw_rgba_reversed(skybox.positive_y.clone().into_raw(),dim)).unwrap();
+        let dim = skybox.positive_z.dimensions();
+        let skybox_pz_tex = glium::texture::Texture2d::new(&self.window, glium::texture::RawImage2d::from_raw_rgba_reversed(skybox.positive_z.clone().into_raw(),dim)).unwrap();
+        let dim = skybox.negative_x.dimensions();
+        let skybox_nx_tex = glium::texture::Texture2d::new(&self.window, glium::texture::RawImage2d::from_raw_rgba_reversed(skybox.negative_x.clone().into_raw(),dim)).unwrap();
+        let dim = skybox.negative_y.dimensions();
+        let skybox_ny_tex = glium::texture::Texture2d::new(&self.window, glium::texture::RawImage2d::from_raw_rgba_reversed(skybox.negative_y.clone().into_raw(),dim)).unwrap();
+        let dim = skybox.negative_z.dimensions();
+        let skybox_nz_tex = glium::texture::Texture2d::new(&self.window, glium::texture::RawImage2d::from_raw_rgba_reversed(skybox.negative_z.clone().into_raw(),dim)).unwrap();
 
         // Main loop
         while should_run {
@@ -244,7 +264,13 @@ impl System for RenderSystem {
                                                  &texture2,
                                                  &texture3,
                                                  &texture4,
-                                                 &light_texture);
+                                                 &light_texture,
+                                                 &skybox_px_tex,
+                                                 &skybox_py_tex,
+                                                 &skybox_pz_tex,
+                                                 &skybox_nx_tex,
+                                                 &skybox_ny_tex,
+                                                 &skybox_nz_tex);
                         let render_msg = Msg { content: Render(RenderMsg::RenderResult(result)) };
                         self.msg_tx[2].send(render_msg);
                     }
@@ -284,7 +310,13 @@ impl RenderSystem {
                   texture2: &glium::texture::Texture2d,
                   texture3: &glium::texture::Texture2d,
                   texture4: &glium::texture::Texture2d,
-                  light_texture: &glium::texture::Texture2d)
+                  light_texture: &glium::texture::Texture2d,
+                  skybox_px_tex: &glium::texture::Texture2d,
+                  skybox_py_tex: &glium::texture::Texture2d,
+                  skybox_pz_tex: &glium::texture::Texture2d,
+                  skybox_nx_tex: &glium::texture::Texture2d,
+                  skybox_ny_tex: &glium::texture::Texture2d,
+                  skybox_nz_tex: &glium::texture::Texture2d)
                   -> Option<()> {
 
         #[derive(Copy, Clone, Debug)]
@@ -313,6 +345,9 @@ impl RenderSystem {
         let mut vertex_data: Vec<Vertex> = Vec::new();
         let mut index_data: Vec<u32> = Vec::new();
         framebuffer.clear_color_and_depth((0.0, 0.0, 0.0, 0.0), 1.0);
+
+
+
         for object in scene.objects {
             for model in &object.models {
                 vertex_data.clear(); // Clear out vertex data from previous pass
@@ -524,6 +559,12 @@ impl RenderSystem {
             albedo_texture: texture3,
             specular_texture: texture4,
             lighting_texture: light_texture,
+            skybox_px_tex: skybox_px_tex,
+            skybox_py_tex: skybox_py_tex,
+            skybox_pz_tex: skybox_pz_tex,
+            skybox_nx_tex: skybox_nx_tex,
+            skybox_ny_tex: skybox_ny_tex,
+            skybox_nz_tex: skybox_nz_tex,
         };
 
         target.clear_color(0.0, 0.0, 0.0, 0.0);
