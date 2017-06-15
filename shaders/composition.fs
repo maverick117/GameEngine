@@ -25,7 +25,7 @@ void main(){
 
   //frag_output = lighting_data;
   //frag_output = vec4(albedo_color.xyz,1.0);
-
+  frag_output.xyz = normal_color;
 
 
 }

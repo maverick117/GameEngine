@@ -158,7 +158,7 @@ impl System for LogicSystem {
         self.scene.lights.push(light);
         let mut static_object_path: Vec<String> = Vec::new();
 
-        static_object_path.push("assets/model/jet1.obj".to_string());
+        static_object_path.push("assets/model/teapot.obj".to_string());
         static_object_path.push("assets/model/cube.obj".to_string());
         //static_object_path.push("assets/model/teapot.obj".to_string());
 
@@ -193,7 +193,7 @@ impl System for LogicSystem {
             near: 1.0,
             far: 20.0,
         };
-        self.scene.camera = Camera::new(Point3::new(0.0, 0.0, 15.0),
+        self.scene.camera = Camera::new(Point3::new(0.0, 0.0, 200.0),
                                         Point3::new(0.0, 0.0, 0.0),
                                         Vector3::new(0.0, 1.0, 0.0));
         self.scene
