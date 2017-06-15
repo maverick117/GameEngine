@@ -11,14 +11,14 @@ uniform sampler2D gNormal;
 
 in vec2 frag_texcoord;
 
-out vec4 frag_output;
+layout (location = 0) out vec4 frag_output;
 
 void main() {
   vec3 fragPos = texture(gPosition, frag_texcoord).xyz;
   vec3 fragNorm = texture(gNormal, frag_texcoord).xyz;
   vec3 fragToLight = lightPos - fragPos;
   vec3 fragToEye = eyePos.xyz - fragPos;
-  float diffuse_coefficient = dot(normalize(fragNorm), normalize(fragToLight));
+  float diffuse_coefficient = clamp(dot(normalize(fragNorm), normalize(fragToLight)),0.0,1.0);
   float specular_coefficient = dot(normalize(normalize(fragToEye) + normalize(fragToLight)), normalize(fragNorm));
   //frag_output.rgb = lightColor ;//* diffuse_coefficient;
 

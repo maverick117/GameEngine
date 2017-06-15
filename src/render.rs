@@ -409,7 +409,8 @@ impl RenderSystem {
                 // Draw to gBuffer
                 framebuffer
                     .draw(&pre_pass_vertex_buffer,
-                          &pre_pass_index_buffer,
+                          //&pre_pass_index_buffer,
+                          &glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList),
                           pre_pass_program,
                           &uniforms,
                           &Default::default())
@@ -484,7 +485,6 @@ impl RenderSystem {
 
         for light in scene.lights {
             let light_uniforms = uniform!{
-                // TODO: uniforms to pass to the lighting pass
                 eyePos: eye_position,
                 lightPos: light.position,
                 lightColor: light.color,
@@ -514,7 +514,7 @@ impl RenderSystem {
         target
             .draw(&quad_vertex_buffer,
                   &quad_index_buffer,
-                  &composition_program,
+                  composition_program,
                   &comp_uniforms,
                   &Default::default())
             .unwrap();
