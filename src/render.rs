@@ -410,6 +410,16 @@ impl RenderSystem {
                     //position: [scene.camera.eye.x, scene.camera.eye.y, scene.camera.eye.z],
                 };
 
+                // draw parameters
+                let params = glium::DrawParameters {
+                    depth: glium::Depth {
+                        test: glium::DepthTest::IfLess,
+                        write: true,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                };
+
                 // Draw to gBuffer
                 framebuffer
                     .draw(&pre_pass_vertex_buffer,
@@ -417,7 +427,7 @@ impl RenderSystem {
                           &glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList),
                           pre_pass_program,
                           &uniforms,
-                          &Default::default())
+                          &params)
                     .unwrap();
             }
         }
