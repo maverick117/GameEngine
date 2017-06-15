@@ -1,25 +1,28 @@
 #version 330
 
-uniform sampler2D position_texture;
-uniform sampler2D normal_texture;
-uniform vec3 light_position;
-uniform vec3 light_color;
-uniform vec3 light_attenuation;
-uniform float light_radius;
+uniform vec4 eyePos;
+uniform vec3 lightPos;
+uniform vec3 lightColor;
+uniform vec3 attenuation;
+uniform float radius;
+
+uniform sampler2D gPosition;
+uniform sampler2D gNormal;
 
 in vec2 frag_texcoord;
 
 out vec4 frag_output;
 
 void main() {
-    vec4 position = texture(position_texture, frag_texcoord);
-    vec4 normal = texture(normal_texture, frag_texcoord);
-    vec3 light_vector = light_position.xyz - position.xyz;
-    float light_distance = abs(length(light_vector));
-    vec3 normal_vector = normalize(normal.xyz);
-    float diffuse = max(dot(normal_vector, light_vector),0.0);
-    float attenuation_factor = 1.0 / (light_attenuation.x + light_attenuation.y * light_distance + light_attenuation.z * light_distance * light_distance);
-    attenuation_factor *= (1.0 - pow((light_distance / light_radius),2.0));
-    attenuation_factor = diffuse * max(attenuation_factor , 0.0);
-    frag_output = vec4(light_color*diffuse,1.0);
+  vec3 fragPos = texture(gPosition, frag_texcoord).xyz;
+  vec3 fragNorm = texture(gNormal, frag_texcoord).xyz;
+  vec3 fragToLight = lightPos - fragPos;
+  vec3 fragToEye = eyePos.xyz - fragPos;
+  float diffuse_coefficient = dot(normalize(fragNorm), normalize(fragToLight));
+  float specular_coefficient = dot(normalize(normalize(fragToEye) + normalize(fragToLight)), normalize(fragNorm));
+  //frag_output.rgb = lightColor ;//* diffuse_coefficient;
+
+  //frag_output.a = specular_coefficient;
+  frag_output.rgb = vec3(1.0,1.0,1.0);
+  frag_output.a = 1.0;
 }

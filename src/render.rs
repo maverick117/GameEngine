@@ -473,6 +473,7 @@ impl RenderSystem {
                 },
                 constant_value: (1.0, 1.0, 1.0, 1.0),
             },
+            multisampling: true,
             ..Default::default()
         };
 
@@ -484,13 +485,29 @@ impl RenderSystem {
         for light in scene.lights {
             let light_uniforms = uniform!{
                 // TODO: uniforms to pass to the lighting pass
+                eyePos: eye_position,
+                lightPos: light.position,
+                lightColor: light.color,
+                attenuation: light.attenuation,
+                radius: light.radius,
+                gPosition: texture1,
+                gNormal: texture2,
             };
+            light_buffer
+                .draw(&quad_vertex_buffer,
+                      &quad_index_buffer,
+                      lighting_program,
+                      &light_uniforms,
+                      &Default::default())
+                .unwrap();
         }
 
         // Composition Pass
 
         let comp_uniforms = uniform!{
-            decal_texture: texture4,
+            albedo_texture: texture3,
+            specular_texture: texture4,
+            lighting_texture: light_texture,
         };
 
         target.clear_color(0.0, 0.0, 0.0, 0.0);
@@ -502,14 +519,6 @@ impl RenderSystem {
                   &Default::default())
             .unwrap();
 
-        /*
-        target.draw(&vertex_buffer,
-                    &glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList),
-                    &program,
-                    &uniforms,
-                    &params)
-                    .unwrap();
-        */
         target.finish().unwrap();
         Some(()) // TODO: None
     }
@@ -557,6 +566,10 @@ impl Camera {
 
     pub fn move_y(&mut self, dist: f32) {
         self.eye.y += dist;
+    }
+
+    pub fn get_eye_pos(&self) -> cgmath::Point3<f32> {
+        self.eye
     }
 }
 

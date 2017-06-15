@@ -30,10 +30,10 @@ impl fmt::Debug for LogicMsg {
 
 #[derive(Clone, Debug)]
 pub struct Light {
-    position: [f32; 4],
-    color: [f32; 3],
-    attenuation: [f32; 3],
-    radius: f32,
+    pub position: [f32; 4],
+    pub color: [f32; 3],
+    pub attenuation: [f32; 3],
+    pub radius: f32,
 }
 
 #[derive(Debug)]
@@ -192,7 +192,7 @@ impl System for LogicSystem {
             near: 1.0,
             far: 20.0,
         };
-        self.scene.camera = Camera::new(Point3::new(0.0, 0.0, 10.0),
+        self.scene.camera = Camera::new(Point3::new(0.0, 0.0, 20.0),
                                         Point3::new(0.0, 0.0, 0.0),
                                         Vector3::new(0.0, 1.0, 0.0));
         self.scene
