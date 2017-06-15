@@ -8,12 +8,14 @@ in vec3 position;
 in vec3 normal;
 in vec3 color_diffuse;
 in vec3 color_specular;
+in float shininess;
 in vec2 texcoord;
 
 out vec4 frag_pos;
 out vec4 frag_norm;
 out vec2 frag_texcoord;
 out vec3 frag_diffuse;
+out float frag_shininess;
 out vec3 frag_specular;
 
 void main() {
@@ -24,6 +26,8 @@ void main() {
     frag_norm = transpose(inverse(model_matrix)) * vec4(normal, 1.0);
 
     frag_texcoord = texcoord;
+
+    frag_shininess = shininess;
 
     gl_Position = proj_matrix * view_matrix * model_matrix * vec4(position,1.0);
 

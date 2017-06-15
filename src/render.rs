@@ -235,7 +235,12 @@ impl System for RenderSystem {
                                                  &lighting_program,
                                                  &composition_program,
                                                  &mut framebuffer,
-                                                 &mut light_buffer);
+                                                 &mut light_buffer,
+                                                 &texture1,
+                                                 &texture2,
+                                                 &texture3,
+                                                 &texture4,
+                                                 &light_texture);
                         let render_msg = Msg { content: Render(RenderMsg::RenderResult(result)) };
                         self.msg_tx[2].send(render_msg);
                     }
@@ -270,7 +275,12 @@ impl RenderSystem {
                   lighting_program: &glium::Program,
                   composition_program: &glium::Program,
                   framebuffer: &mut glium::framebuffer::MultiOutputFrameBuffer,
-                  light_buffer: &mut glium::framebuffer::SimpleFrameBuffer)
+                  light_buffer: &mut glium::framebuffer::SimpleFrameBuffer,
+                  texture1: &glium::texture::Texture2d,
+                  texture2: &glium::texture::Texture2d,
+                  texture3: &glium::texture::Texture2d,
+                  texture4: &glium::texture::Texture2d,
+                  light_texture: &glium::texture::Texture2d)
                   -> Option<()> {
 
         #[derive(Copy, Clone, Debug)]
@@ -278,7 +288,8 @@ impl RenderSystem {
             position: [f32; 3],
             normal: [f32; 3],
             color_diffuse: [f32; 3],
-            color_specular: [f32; 4],
+            color_specular: [f32; 3],
+            shininess: f32,
             texcoord: [f32; 2],
         }
 
@@ -287,13 +298,12 @@ impl RenderSystem {
                           normal,
                           color_diffuse,
                           color_specular,
+                          shininess,
                           texcoord);
 
         let mut target = self.window.draw();
         // Equivalent to glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         target.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
-
-        // TODO: Retrieve texture info from each model
 
         // Single pass on all objects
         let mut vertex_data: Vec<Vertex> = Vec::new();
@@ -304,6 +314,43 @@ impl RenderSystem {
                 vertex_data.clear(); // Clear out vertex data from previous pass
                 index_data.clear(); // Clear out index data from the previous pass
                 let mesh = &model.mesh;
+
+                let color_diffuse: [f32; 3];
+                let color_specular: [f32; 3];
+                let shininess: f32;
+                let diffuse_tex: glium::texture::Texture2d;
+
+                if let Some(x) = mesh.material_id {
+                    let mt = &object.materials[x];
+                    // Retrieve the material
+                    color_diffuse = mt.diffuse.clone();
+                    color_specular = mt.specular.clone();
+                    shininess = mt.shininess;
+                    let diffuse_image = &object
+                                             .textures
+                                             .get(&mt.diffuse_texture)
+                                             .unwrap()
+                                             .diffuse_image;
+                    let image_dimensions = diffuse_image.dimensions();
+                    diffuse_tex =
+                        glium::texture::Texture2d::new(&self.window, glium::texture::RawImage2d::from_raw_rgba_reversed(diffuse_image
+                                                                               .clone()
+                                                                               .into_raw(),
+                                                                           image_dimensions)).unwrap();
+                } else {
+                    color_diffuse = [0.6, 0.6, 0.6];
+                    color_specular = [0.3, 0.3, 0.3];
+                    shininess = 25.0;
+                    diffuse_tex = glium::texture::Texture2d::empty(&self.window, 2, 2).unwrap();
+                    diffuse_tex.write(glium::Rect {
+                                          left: 0,
+                                          bottom: 0,
+                                          width: 2,
+                                          height: 2,
+                                      },
+                                      vec![vec![0., 0.], vec![0., 0.]]);
+                }
+
                 for idx in &mesh.indices {
                     // For triangle indices
                     let i = *idx as usize;
@@ -327,24 +374,18 @@ impl RenderSystem {
                         [0.0, 0.0]
                     };
 
-                    let (color_diffuse, color_specular) = match mesh.material_id {
-                        Some(i) => {
-                            (object.materials[i].diffuse,
-                             [object.materials[i].specular[0],
-                              object.materials[i].specular[1],
-                              object.materials[i].specular[2],
-                              object.materials[i].shininess])
-                        }
-                        None => ([0.8, 0.8, 0.8], [0.15, 0.15, 0.15, 15.0]),
-                    };
                     vertex_data.push(Vertex {
                                          position: pos,
                                          normal: normal,
                                          color_diffuse: color_diffuse,
                                          color_specular: color_specular,
+                                         shininess: shininess,
                                          texcoord: texcoord,
                                      });
                 }
+
+
+
                 // Draw for each model
                 let pre_pass_vertex_buffer = glium::VertexBuffer::new(&self.window, &vertex_data)
                     .unwrap();
@@ -361,7 +402,7 @@ impl RenderSystem {
                     proj_matrix: scene.camera.get_projection_matrix(),
                     view_matrix: scene.camera.get_view_matrix(),
                     model_matrix: object.get_model_matrix(),
-                    // TODO: Add texture in here
+                    diffuse_tex: &diffuse_tex,
                     //position: [scene.camera.eye.x, scene.camera.eye.y, scene.camera.eye.z],
                 };
 
@@ -376,8 +417,45 @@ impl RenderSystem {
             }
         }
 
+        // Quad buffer for further passes
+        let quad_vertex_buffer = {
+            #[derive(Copy,Clone,Debug)]
+            struct Vertex {
+                position: [f32; 4],
+                texcoord: [f32; 2],
+            }
+
+            implement_vertex!(Vertex, position, texcoord);
+
+            glium::VertexBuffer::new(&self.window,
+                                     &[Vertex {
+                                          position: [-1.0, -1.0, 0.0, 1.0],
+                                          texcoord: [0.0, 0.0],
+                                      },
+                                      Vertex {
+                                          position: [1.0, -1.0, 0.0, 1.0],
+                                          texcoord: [1.0, 0.0],
+                                      },
+                                      Vertex {
+                                          position: [1.0, 1.0, 0.0, 1.0],
+                                          texcoord: [1.0, 1.0],
+                                      },
+                                      Vertex {
+                                          position: [-1.0, 1.0, 0.0, 1.0],
+                                          texcoord: [0.0, 1.0],
+                                      }])
+                    .unwrap()
+        };
+        use glium::index::PrimitiveType;
+        let quad_index_buffer = glium::IndexBuffer::new(&self.window,
+                                                        PrimitiveType::TrianglesList,
+                                                        &[0u16, 1, 2, 0, 2, 3])
+                .unwrap();
+
 
         // Shading Passes
+
+        // Shading parameters
         let params = glium::DrawParameters {
             depth: glium::Depth {
                 test: glium::DepthTest::IfLess,
@@ -409,7 +487,20 @@ impl RenderSystem {
             };
         }
 
+        // Composition Pass
 
+        let comp_uniforms = uniform!{
+            decal_texture: texture1,
+        };
+
+        target.clear_color(0.0, 0.0, 0.0, 0.0);
+        target
+            .draw(&quad_vertex_buffer,
+                  &quad_index_buffer,
+                  &composition_program,
+                  &comp_uniforms,
+                  &Default::default())
+            .unwrap();
 
         /*
         target.draw(&vertex_buffer,

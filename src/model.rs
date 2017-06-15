@@ -25,11 +25,11 @@ pub struct ModelSystem {
 
 #[derive(Clone)]
 pub struct TextureImages {
-    ambient_image: image::RgbaImage,
-    diffuse_image: image::RgbaImage,
-    specular_image: image::RgbaImage,
-    normal_image: image::RgbaImage,
-    dissolve_image: image::RgbaImage,
+    pub ambient_image: image::RgbaImage,
+    pub diffuse_image: image::RgbaImage,
+    pub specular_image: image::RgbaImage,
+    pub normal_image: image::RgbaImage,
+    pub dissolve_image: image::RgbaImage,
 }
 
 impl System for ModelSystem {
