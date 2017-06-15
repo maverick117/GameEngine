@@ -554,6 +554,7 @@ impl RenderSystem {
         // Composition Pass
 
         let comp_uniforms = uniform!{
+            eyePos: eye_position,
             position_texture: texture1,
             normal_texture: texture2,
             albedo_texture: texture3,
