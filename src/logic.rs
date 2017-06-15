@@ -1,6 +1,6 @@
 /* Logic Module */
 
-use std::sync::mpsc::*;
+// use std::sync::mpsc::*;
 use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
 use glutin::Event;
@@ -240,7 +240,24 @@ impl System for LogicSystem {
             let mut cmd_queue = Vec::new();
             cmd_queue.push(self.msg_rx.recv().unwrap());
 
+            let mut i: i32 = self.scene.objects.len() as i32- 1;
+            // println!("{:?}", i);
             // TODO: Do lifetime checks
+            while i >= 0 {
+                let should_remove = match self.scene.objects[i as usize].lifetime {
+                    LifeTime::Time(t) => {
+                        self.scene.objects[i as usize].lifetime = LifeTime::Time(t-1.0);
+                        // println!("Object {:?} has {:?} time left....", i, t);
+                        t - 1.0 <= 0.0
+                    },
+                    LifeTime::Infinity => false,
+                };
+                if should_remove {
+                    self.scene.objects.remove(i as usize);
+                    // println!("Remove {:?}!", i);
+                }
+                i -= 1;
+            }
 
             while let Ok(msg) = self.msg_rx.try_recv() {
                 cmd_queue.push(msg);
@@ -304,7 +321,7 @@ impl System for LogicSystem {
                                 if let Ok(msg) = self.msg_rx.recv() {
                                     match msg.content {
                                         Model(ObjectResult(Some(mut obj))) => {
-                                            obj.lifetime = LifeTime::Time(5.0);
+                                            obj.lifetime = LifeTime::Time(50.0);
                                             obj.speed[1] = 0.4;
                                             {
                                                 let main_obj: &Object = &self.scene.objects[0];
