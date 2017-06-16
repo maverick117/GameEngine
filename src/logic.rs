@@ -131,7 +131,7 @@ impl Object {
         };
         self.rotate_matrix = rot * self.rotate_matrix;
     }
-    fn scale(&mut self, ratio: f32) {
+    pub fn scale(&mut self, ratio: f32) {
         self.scale_matrix = Matrix4::from_scale(ratio) * self.scale_matrix;
     }
     pub fn get_model_matrix(&self) -> [[f32; 4]; 4] {
@@ -233,6 +233,22 @@ impl System for LogicSystem {
 */
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
     fn main_loop(&mut self) {
         use MsgContent::*;
@@ -314,7 +330,7 @@ impl System for LogicSystem {
                             }
                             Space => {
                                 //println!("Shoot!");
-                                let obj_path = "assets/model/jet1.obj".to_string();
+                                let obj_path = "assets/model/missile2.obj".to_string();
                                 let msg =
                                     Msg { content: Logic(LogicMsg::ModelReq(obj_path.clone())) };
                                 use model::ModelMsg::ObjectResult;
@@ -331,6 +347,7 @@ impl System for LogicSystem {
                                                 obj.translate(main_pos[0],
                                                               main_pos[1],
                                                               main_pos[2]);
+                                                obj.scale(0.25);
                                             }
                                             self.scene.objects.push(obj);
                                         }

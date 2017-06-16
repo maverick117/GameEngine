@@ -80,6 +80,11 @@ impl System for ModelSystem {
                                       LifeTime::Infinity));
             }
         }
+        println!("Models loaded:{:?}",
+                 self.objects
+                     .iter()
+                     .map(|x| x.path.to_string())
+                     .collect::<Vec<String>>());
         // println!("Model load finished. Objects: {:?}", self.objects);
     }
     fn main_loop(&mut self) {
