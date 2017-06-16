@@ -30,7 +30,7 @@ void main(){
 
   if(albedo.a == 1.0){
     // TODO: Add Reflection
-    
+
     frag_output.rgb = albedo_color.rgb * 0.2;
     frag_output.rgb += albedo_color.rgb * lighting_data.xyz;
     frag_output.rgb += specular_color.rgb * lighting_data.w;
@@ -73,20 +73,23 @@ void main(){
     }
     // Negative Y
     else if (!yPositive && absY >= absX && absY >= absZ){
-      uc = x;
-          vc = z;
+      uc = x / sqrt(2) + 1/sqrt(2);
+          vc = z / sqrt(2) + 1/sqrt(2);
           frag_output.rgb = texture(skybox_ny_tex,vec2(uc,vc)).rgb;
     }
     // Positive Z
     else if (zPositive && absZ >= absX && absZ >= absY){
-      uc = x;
-          vc = y;
+      uc = x / sqrt(2) + 1/sqrt(2);
+          vc = y / sqrt(2) + 1/sqrt(2);
           frag_output.rgb = texture(skybox_pz_tex,vec2(uc,vc)).rgb;
     }
     // Negative Z
     else if (!zPositive && absZ >= absX && absZ >= absY){
-      uc = -x;
-          vc = y;
+      uc = x / sqrt(2) + 1/sqrt(2);
+
+      vc = y / sqrt(2) + 1/sqrt(2);
+      //uc = -x;
+        //  vc = y;
           frag_output.rgb = texture(skybox_nz_tex,vec2(uc,vc)).rgb;
     }
 
