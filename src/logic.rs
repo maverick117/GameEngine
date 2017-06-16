@@ -174,7 +174,7 @@ impl System for LogicSystem {
         let mut static_object_path: Vec<String> = Vec::new();
 
         static_object_path.push("assets/model/jet1.obj".to_string());
-        static_object_path.push("assets/model/cube.obj".to_string());
+        //static_object_path.push("assets/model/cube.obj".to_string());
         //static_object_path.push("assets/model/teapot.obj".to_string());
 
         for path in static_object_path {
@@ -221,7 +221,7 @@ impl System for LogicSystem {
                  self.scene.camera.get_projection_matrix());
         println!("Logic System Initilized.");
         self.msg_tx[1].send(Msg { content: MsgContent::System(SystemMsg::SysInit) });
-        self.scene.objects[1].speed[1] = 0.01;
+        //self.scene.objects[1].speed[1] = 0.01;
         /*
         let skybox = Skybox::new(String::from("assets/skybox/posx.jpg"),
                                  String::from("assets/skybox/posy.jpg"),
@@ -231,6 +231,8 @@ impl System for LogicSystem {
                                  String::from("assets/skybox/negz.jpg"));
         self.scene.skybox = Some(skybox);
 */
+
+
     }
     fn main_loop(&mut self) {
         use MsgContent::*;
@@ -240,16 +242,16 @@ impl System for LogicSystem {
             let mut cmd_queue = Vec::new();
             cmd_queue.push(self.msg_rx.recv().unwrap());
 
-            let mut i: i32 = self.scene.objects.len() as i32- 1;
+            let mut i: i32 = self.scene.objects.len() as i32 - 1;
             // println!("{:?}", i);
             // TODO: Do lifetime checks
             while i >= 0 {
                 let should_remove = match self.scene.objects[i as usize].lifetime {
                     LifeTime::Time(t) => {
-                        self.scene.objects[i as usize].lifetime = LifeTime::Time(t-1.0);
+                        self.scene.objects[i as usize].lifetime = LifeTime::Time(t - 1.0);
                         // println!("Object {:?} has {:?} time left....", i, t);
                         t - 1.0 <= 0.0
-                    },
+                    }
                     LifeTime::Infinity => false,
                 };
                 if should_remove {
@@ -312,7 +314,7 @@ impl System for LogicSystem {
                             }
                             Space => {
                                 //println!("Shoot!");
-                                let obj_path = "assets/model/cube.obj".to_string();
+                                let obj_path = "assets/model/jet1.obj".to_string();
                                 let msg =
                                     Msg { content: Logic(LogicMsg::ModelReq(obj_path.clone())) };
                                 use model::ModelMsg::ObjectResult;
@@ -321,7 +323,7 @@ impl System for LogicSystem {
                                 if let Ok(msg) = self.msg_rx.recv() {
                                     match msg.content {
                                         Model(ObjectResult(Some(mut obj))) => {
-                                            obj.lifetime = LifeTime::Time(50.0);
+                                            obj.lifetime = LifeTime::Time(75.0);
                                             obj.speed[1] = 0.4;
                                             {
                                                 let main_obj: &Object = &self.scene.objects[0];
