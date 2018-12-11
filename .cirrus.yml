@@ -1,0 +1,7 @@
+build_task:
+  container:
+    image: rustlang/rust:nightly
+  cargo_cache:
+    folder: $CARGO_HOME/registry
+  build_script: cargo build
+  before_cache_script: rm -rf $CARGO_HOME/registry/index
